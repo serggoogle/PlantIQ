@@ -1,3 +1,3 @@
 #pragma once
 constexpr char SSID[] = "TestSSID";
-constexpr char PASSWORD[] = "1234"
+constexpr char PASSWORD[] = "1234";
