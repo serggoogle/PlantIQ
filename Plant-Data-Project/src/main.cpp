@@ -1,10 +1,7 @@
 #include <Arduino.h>
 #include <Plant.h>
 
-Plant testPlant;
-char plantName[] = "TestPlant2";
-char ssid[] = "*SSID*";
-char pass[] = "*PASSWORD*";
+Plant testPlant("TestPlant2");
 char mqtt_broker[] = "*MQTT-IP*";
 int mqtt_port = 1883;
 
@@ -13,13 +10,13 @@ void setup() {
     // start serial port
   Serial.begin(9600);
 
-  testPlant = Plant(plantName, ssid, pass, mqtt_broker, mqtt_port);
-  testPlant.setWiFi();
+  // testPlant = Plant(plantName, mqtt_broker, mqtt_port);
+  // testPlant.setWiFi();
 
   Serial.println("> Creating plant:"); 
   Serial.println("> Plant Details: ");
   Serial.printf("Name: %s\n", testPlant.getName().c_str());
-  Serial.printf("Address: %s\n", testPlant.getDeviceAddress().toString().c_str());
+  // Serial.printf("Address: %s\n", testPlant.getDeviceAddress().toString().c_str());
 }
 
 void loop() {

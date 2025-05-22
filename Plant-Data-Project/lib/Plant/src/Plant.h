@@ -9,15 +9,15 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <DallasTemperature.h>
+
 // Class definition
 class Plant {
     public:
-        Plant();
-        Plant(char * name, char * ssid, char * pass, char * mqtt_broker, int mqtt_port);
-        Plant(char * name, char * ssid, char * pass, char * mqtt_broker, int mqtt_port, IPAddress ip_address, IPAddress subnet);
+        Plant(char * name);
+        Plant(char * name, char * species);
         
         String getName();
-        IPAddress getDeviceAddress();
+        String getSpecies();
 
         float getTemperature_F();
         float getTemperature_C();
@@ -25,23 +25,12 @@ class Plant {
 
         void setCustomNetworkFlag();
         void sendPayload(String name, String sensor, float value);
-        const char *_ssid;
-        const char *_pass;
-
-        void setWiFi();
         void setMQTT();
 
     private:
-        
         String _name;
-        char * _mqtt_broker;
-        int _mqtt_port;
+        String _species;
         
-        IPAddress _device_ip;
-        IPAddress _gateway;
-        IPAddress _subnet;
-
-        bool _wifi_success = false;
         bool _temp_sensor_success = false;
         bool _moist_sensor_success = false;
         bool _usingCustomNetwork = false;
@@ -54,9 +43,6 @@ class Plant {
         OneWire *oneWire;
         DallasTemperature *temp_sensor;
         
-        //Create WiFi & PubSub clients
-        WiFiClient *wifiClient;
-        PubSubClient *mqttClient;
 };
 
 #endif
