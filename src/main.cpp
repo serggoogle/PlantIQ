@@ -22,10 +22,10 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   // float temp_f = testPlant.getTemperature_F();
-  int moisture = testPlant.getSoilMoisture();
+  // int moisture = testPlant.getSoilMoisture();
   
   Serial.print("Moisture: ");
-  Serial.println(moisture);
+  // Serial.println(moisture);
 
   // testPlant.sendPayload(plantName,"/temperature", temp_f);
   // testPlant.sendPayload(plantName,"/moisture", moisture);
