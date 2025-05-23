@@ -1,15 +1,11 @@
 /*
-    Temperature.h - Library for interacting with OneWire.h and DallasTemperature.h
-    Created by Sergio Olvrera, June 15, 2024
+    Plant.h -
+    Created by Sergio Olvera, May 23, 2025
 */
 #ifndef Plant_h
 #define Plant_h
 
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-#include <DallasTemperature.h>
-
+// #include <Arduino.h>
 // Class definition
 class Plant {
 public:
@@ -21,12 +17,6 @@ public:
 private:
     String _name;
     String _species;
-
-    // void setup();
-    // void setDeviceAddress();
-    // int getSoilMoisture();
-    // void setMoistSensor();
-    // bool _moist_sensor_success = false;
 };
 
 #endif

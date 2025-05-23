@@ -1,9 +1,8 @@
 #include "Temperature.h"
-#include "TemperatureConfig.h"
+#include "Arduino.h"
 #include <HardwareSerial.h>
 #include "DallasTemperature.h"
 #include "OneWire.h"
-#include "Plant.h"
 
 #define ONE_WIRE_BUS 12
 #define TEMP_RESOLUTION 12
@@ -30,8 +29,8 @@ void Temperature::setup()
     }
     _temp_sensor_success = true;
 }
-float Temperature::getTemperature_F()
-{
+
+float Temperature::getTemperature_F(){
     if (&temp_sensor != NULL){
         temp_sensor->requestTemperatures();
         return temp_sensor->getTempFByIndex(TEMP_SENSOR_INDEX);
@@ -39,8 +38,7 @@ float Temperature::getTemperature_F()
     return -1;
 }
 
-float Temperature::getTemperature_C()
-{
+float Temperature::getTemperature_C(){
     temp_sensor->requestTemperatures();
     return temp_sensor->getTempCByIndex(TEMP_SENSOR_INDEX);
 }

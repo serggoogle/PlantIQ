@@ -1,6 +1,9 @@
 #ifndef MQTT_h
 #define MQTT_h
 
+class String;
+class PubSubClient;
+
 class MQTT {
 public:
     MQTT();

@@ -1,5 +1,5 @@
 .pio
 .vscode
 .idea
-lib/WiFi/WiFiCredentials.h
+lib/Network/WiFiCredentials.h
 lib/MQTT/MQTTCredentials.h
