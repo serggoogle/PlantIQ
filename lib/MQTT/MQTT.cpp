@@ -40,8 +40,9 @@ void MQTT::mqtt_connect() {
     Serial.println(_mqtt_port);
 
     mqttClient->setServer(_mqtt_broker, _mqtt_port);
-    mqttClient->connect();
     Serial.println("> Connecting to MQTT Broker");
+    // TODO: Select adequate id for mqttClient->connect();
+    // mqttClient->connect();
 
     int RECONNECT_COUNT = 25;
     while (!mqttClient->connected() && RECONNECT_COUNT > 0)
