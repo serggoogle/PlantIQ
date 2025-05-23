@@ -6,15 +6,24 @@
 #include "Plant.h"
 #define MOISTURE_SENSOR_PIN A0
 
-Plant::Plant(char *name)
+Plant::Plant(const String &name)
 {
     _name = name;
 }
 
-Plant::Plant(char *name, char* species)
+Plant::Plant(const String &name, const String &species)
 {
     _name = name;
     _species = species;
+}
+
+String Plant::getName()
+{
+    return _name;
+}
+
+String Plant::getSpecies() {
+    return _species;
 }
 
 // Main Arduino Code
@@ -37,11 +46,6 @@ Plant::Plant(char *name, char* species)
 //     }
 //     Serial.println("*********************************************************\n");
 // }
-
-String Plant::getName()
-{
-    return _name;
-}
 
 // Moisture Code
 // int Plant::getSoilMoisture()
