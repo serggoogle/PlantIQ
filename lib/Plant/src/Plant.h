@@ -19,8 +19,6 @@ class Plant {
         String getName();
         String getSpecies();
 
-        float getTemperature_F();
-        float getTemperature_C();
         int getSoilMoisture();
 
         void setCustomNetworkFlag();
@@ -31,17 +29,12 @@ class Plant {
         String _name;
         String _species;
         
-        bool _temp_sensor_success = false;
         bool _moist_sensor_success = false;
         bool _usingCustomNetwork = false;
 
         void setup();
         void setDeviceAddress();
-        void setTempSensor();
         void setMoistSensor();
-        
-        OneWire *oneWire;
-        DallasTemperature *temp_sensor;
         
 };
 
