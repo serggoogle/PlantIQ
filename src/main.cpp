@@ -1,33 +1,26 @@
 #include <Arduino.h>
-#include <Plant.h>
+#include "Plant.h"
+#include "Temperature.h"
+#include "Network.h"
+#include "MQTT.h"
 
-Plant testPlant("TestPlant2");
-char mqtt_broker[] = "*MQTT-IP*";
-int mqtt_port = 1883;
+
+
+Plant plant("TestPlant1", "m");
 
 void setup() {
-  // put your setup code here, to run once:
-    // start serial port
+  delay(250);
   Serial.begin(9600);
-
-  // testPlant = Plant(plantName, mqtt_broker, mqtt_port);
-  // testPlant.setWiFi();
-
-  Serial.println("> Creating plant:"); 
+  Serial.println("*********************************************************\n");
   Serial.println("> Plant Details: ");
-  Serial.printf("Name: %s\n", testPlant.getName().c_str());
-  // Serial.printf("Address: %s\n", testPlant.getDeviceAddress().toString().c_str());
+  Serial.printf("Plant Name: %s\n", plant.getName().c_str());
+  Serial.printf("Plant Species: %s\n", plant.getSpecies().c_str());
+  Serial.println("*********************************************************\n");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  // float temp_f = testPlant.getTemperature_F();
-  // int moisture = testPlant.getSoilMoisture();
-  
-  Serial.print("Moisture: ");
-  // Serial.println(moisture);
-
-  // testPlant.sendPayload(plantName,"/temperature", temp_f);
-  // testPlant.sendPayload(plantName,"/moisture", moisture);
+  /*
+   *  Periodically sends data to remote prometheus and mqtt servers
+   */
   delay(500);
 }

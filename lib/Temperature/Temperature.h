@@ -1,19 +1,28 @@
-#ifndef TEMPERATURE_H
-#define TEMPERATURE_H
+/*
+    Temperature.h - Library for interacting with OneWire.h and DallasTemperature.h
+    Created by Sergio Olvera, May 23, 2025
+*/
+
+#ifndef Temperature_h
+#define Temperature_h
+
+class OneWire;
+class DallasTemperature;
 
 class Temperature {
 public:
-    Temperature();
-    Temperature(int pin);
+    Temperature(): _pin(0){
+    };
     static void setup();
-    float getTemperature_F();
-    float getTemperature_C();
+    static float getTemperature_F();
+    static float getTemperature_C();
     static bool _temp_sensor_success;
 
 private:
     int _pin;
-    OneWire *oneWire;
-    DallasTemperature *temp_sensor;
+    static OneWire *oneWire;
+    static DallasTemperature *temp_sensor;
+
 };
 
 #endif
