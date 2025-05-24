@@ -1,39 +1,41 @@
 #include "Arduino.h"
 #include "Network.h"
-#include <WiFiCredentials.h>
+#include "WiFiCredentials.h"
 
-
-Network::Network(){
+Network::Network(const String &hostname){
     // Utilizing the variables from WiFiCredentials.h
+    _hostname = hostname;
     _ssid = SSID;
     _pass = PASSWORD;
 }
 
-Network::Network(const char *ssid, const char *password){
+Network::Network(const String &hostname, const char *&ssid, const char *&password){
+    _hostname = hostname;
     _ssid = ssid;
     _pass = password;
 }
 
-void Network::setDeviceAddress() {
-    _device_ip = WiFi.localIP();
-}
-
-boolean Network::wifi_connect() {
-    Serial.println("********* Connecting to ");
-    Serial.print(_ssid);
-    Serial.println(" network *********");
-
+boolean Network::connect() const {
     WiFi.begin(_ssid, _pass);
 
+    // Using Built-In LED
+    pinMode(LED_BUILTIN, OUTPUT);
+
     while (WiFi.status() != WL_CONNECTED) {
-        Serial.println(".");
+        // TODO: Utilize the _connection_timeout so it doesn't keep attempting indefinitely
+        // While attempting to connect, on-board led will keep blinking
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(1000);
+        digitalWrite(LED_BUILTIN, HIGH);
         delay(1000);
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("> Arduino connected to Wifi");
-        setDeviceAddress();
-        _wifi_success = true;
+        Serial.println("Arduino successfully connected to WiFi Network");
+        WiFi.setHostname(_hostname.c_str());
+        // Solid LED indicates a successful connection
+        digitalWrite(LED_BUILTIN, LOW);
+        Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
         return true;
     }
     return false;
