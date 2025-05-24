@@ -24,6 +24,7 @@ boolean Network::connect() const {
     pinMode(LED_BUILTIN, OUTPUT);
 
     while (WiFi.status() != WL_CONNECTED) {
+        // TODO: Utilize the _connection_timeout so it doesn't keep attempting indefinitely
         // While attempting to connect, on-board led will keep blinking
         digitalWrite(LED_BUILTIN, LOW);
         delay(1000);

@@ -12,7 +12,7 @@ private:
     String _hostname = "ESP-12";
     const char *_ssid;
     const char *_pass;
-    const short _wifi_connect_timeout = 60;
+    const short _connection_timeout = 60;
 };
 
 #endif
