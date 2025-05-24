@@ -6,15 +6,27 @@
 
 
 
-Plant plant("TestPlant1", "m");
+Plant PLANT("TestPlant1", "TestSpecies");
+const String HOSTNAME = "ESP-12-" + PLANT.getName();
+Network WIFI(HOSTNAME);
 
 void setup() {
-  delay(250);
+  delay(2000);
   Serial.begin(9600);
-  Serial.println("*********************************************************\n");
+  Serial.println("*********************************************************");
+
   Serial.println("> Plant Details: ");
-  Serial.printf("Plant Name: %s\n", plant.getName().c_str());
-  Serial.printf("Plant Species: %s\n", plant.getSpecies().c_str());
+  Serial.printf("Plant Name: %s\n", PLANT.getName().c_str());
+  Serial.printf("Plant Species: %s\n", PLANT.getSpecies().c_str());
+  Serial.printf("> Instantiating Network: \n");
+
+  if (WIFI.connect()) {
+    Serial.printf("Hostname: %s\n", WiFi.getHostname());
+  }
+  else {
+    Serial.println("Failed to connect to WiFi network");
+  }
+
   Serial.println("*********************************************************\n");
 }
 

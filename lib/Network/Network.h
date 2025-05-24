@@ -4,20 +4,14 @@
 
 class Network {
 public:
-    Network();
-    Network(const char *ssid, const char *password);
-    boolean wifi_connect();
-    String status();
-    void setDeviceAddress();
+    explicit Network(const String &hostname);
+    Network(const String &hostname, const char *&ssid, const char *&password);
+    [[nodiscard]] boolean connect() const;
 
-// protected:
 private:
+    String _hostname = "ESP-12";
     const char *_ssid;
     const char *_pass;
-    IPAddress _device_ip;
-    IPAddress _gateway;
-    IPAddress _subnet;
-    bool _wifi_success = false;
     const short _wifi_connect_timeout = 60;
 };
 
