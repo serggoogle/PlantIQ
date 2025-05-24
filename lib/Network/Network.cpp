@@ -2,8 +2,6 @@
 #include "Network.h"
 #include "WiFiCredentials.h"
 
-#define ON_BOARD_LED 2
-
 Network::Network(const String &hostname){
     // Utilizing the variables from WiFiCredentials.h
     _hostname = hostname;
