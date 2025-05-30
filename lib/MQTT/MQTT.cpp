@@ -2,7 +2,7 @@
 #include "Network.h"
 #include "MQTTCredentials.h"
 #include "PubSubClient.h"
-#include "ArduinoJson.h"
+#include "WiFiClient.h"
 
 MQTT::MQTT(): mqttClient(nullptr) {
     // Utilizing the values from MQTTCredentials.h

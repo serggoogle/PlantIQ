@@ -1,13 +1,16 @@
 #include <Arduino.h>
+#include <PrometheusArduino.h>
 #include "Plant.h"
 #include "Temperature.h"
 #include "Network.h"
 #include "MQTT.h"
 
+using namespace std;
 
 
-Plant PLANT("TestPlant1", "TestSpecies");
-const String HOSTNAME = "ESP-12-" + PLANT.getName();
+Plant PLANT("TestPlant2", "TestSpecies");
+
+const String HOSTNAME = "ESP-32-" + PLANT.getName();
 Network WIFI(HOSTNAME);
 
 void setup() {
@@ -21,7 +24,7 @@ void setup() {
   Serial.printf("> Instantiating Network: \n");
 
   if (WIFI.connect()) {
-    Serial.printf("Hostname: %s\n", WiFi.getHostname());
+    Serial.printf("Hostname: %s\n", WiFiClass::getHostname());
   }
   else {
     Serial.println("Failed to connect to WiFi network");

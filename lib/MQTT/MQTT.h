@@ -1,5 +1,7 @@
 #ifndef MQTT_h
 #define MQTT_h
+#pragma once
+#include <Arduino.h>
 
 class String;
 class PubSubClient;
