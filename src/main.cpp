@@ -28,7 +28,7 @@ void setup() {
     Serial.printf("Plant Name: %s\n", plant.getName().c_str());
     Serial.printf("Plant Species: %s\n", plant.getSpecies().c_str());
     Serial.println("> Instantiating Prometheus:");
-    prometheus.setupClients(plant.getName().c_str(), false);
+    prometheus.setupClients(plant.getName().c_str(), true);
     prometheus.addTimeSeries(ts1);
     prometheus.addTimeSeries(ts2); // should error out if using default Prometheus constructor with numSeries=1
     Serial.printf("Prometheus Labels: %s\n", labels.c_str());
