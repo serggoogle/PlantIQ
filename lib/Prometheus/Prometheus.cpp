@@ -1,14 +1,9 @@
 #include <Arduino.h>
 #include <PromClient.h>
-#include <PromLokiTransport.H>
+#include <PromLokiTransport.h>
 #include "Prometheus.h"
-#include "Adafruit_NeoPixel.h"
 #include "Config.h"
 
-#define NUM_PIXELS 1
-PromLokiTransport transport;
-PromClient client(transport);
-Adafruit_NeoPixel pixels(NUM_PIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 
 void Prometheus::setupClients(const char* hostname){
     setupClients(hostname, URL, PATH, PORT, false);
@@ -16,14 +11,11 @@ void Prometheus::setupClients(const char* hostname){
 
 void Prometheus::setupClients(const char* hostname, bool debug){
     setupClients(hostname, URL, PATH, PORT, debug);
-
 }
 
 void Prometheus::setupClients(const char* hostname, const char* url, char* path, uint16_t port, bool debug){
+    client.setTransport(transport);
     Serial.println("Setting up client...");
-    pixels.begin();
-    pixels.setPixelColor(0, pixels.Color(225, 0, 0));
-    pixels.show();
 
     // Configure and start the transport layer
     transport.setUseTls(false);
@@ -34,10 +26,9 @@ void Prometheus::setupClients(const char* hostname, const char* url, char* path,
         Serial.println(transport.errmsg);
         while (true) {};
     }
-    else {
-        WiFi.setHostname(hostname);
-        Serial.printf("Hostname: %s\n", WiFi.getHostname());
-    }
+
+    WiFi.setHostname(hostname);
+    Serial.printf("Hostname: %s\n", WiFi.getHostname());
 
     // Configure and setup prometheus client
     client.setUrl(url);
@@ -49,11 +40,16 @@ void Prometheus::setupClients(const char* hostname, const char* url, char* path,
         while (true) {};
     }
 
-    // Configure Write Request Buffer
-    (debug) ? req.setDebug(Serial) : void();
-
-    // Green led indicates a successful connection
-    pixels.setPixelColor(0, pixels.Color(0, 225, 0));
-    pixels.show();
     Serial.println("Connected");
+}
+
+void Prometheus::addTimeSeries(TimeSeries &series) {
+    Serial.println("Adding time-series...");
+    if (!req.addTimeSeries(series)) {
+        Serial.println(req.errmsg);
+    }
+}
+
+int64_t Prometheus::getTimeMillis() {
+    return transport.getTimeMillis();
 }
