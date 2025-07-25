@@ -45,6 +45,35 @@ Tools for future experimental software (Kafka, Flink, etc.):
    git clone https://github.com/yourusername/PlantMonitoringService.git
    ```
 
+## Credentials Setup
+
+Before building and running the project, you need to create two configuration files to store your credentials. **Do not commit these files to version control if they contain sensitive information.** These files are included in the .gitignore but feel free to double check.
+
+### 1. MQTT Credentials
+Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
+```cpp
+#pragma once
+
+#define MQTT_BROKER "your-mqtt-broker-address"
+#define MQTT_PORT 1883
+#define MQTT_USER "your-username"
+#define MQTT_PASSWORD "your-password"
+```
+Replace the placeholder values with your actual MQTT broker information.
+
+### 2. Prometheus Credentials
+Create a file at lib/Prometheus/Config.h with the following content:
+```cpp
+#pragma once
+
+#define WIFI_SSID "your-wifi-ssid"
+#define WIFI_PASSWORD "your-wifi-password"
+#define URL "PROMETHEUS-SERVER-IP"
+#define PATH "/api/v1/write"
+#define PORT 9090
+```
+Replace the placeholder values with your actual WiFi and Prometheus server details.
+
 ## Infrastructure Setup
    ```sh
     cd PlantMonitoringService/infra
