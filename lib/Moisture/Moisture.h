@@ -4,7 +4,7 @@
 class Moisture {
     public:
     Moisture(){};
-    static int getMoisture();
+    static uint16_t getMoisture();
 };
 
 #endif

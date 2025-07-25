@@ -9,14 +9,16 @@
 // Class definition
 class Plant {
 public:
-    explicit Plant(const String &name);
-    Plant(const String &name, const String &species);
-    String getName();
-    String getSpecies();
+    explicit Plant(const char* name);
+    Plant(const char* name, const char* species);
+    const char* getName();
+    const char* getSpecies();
+    const char* getLabel();
 
 private:
-    String _name;
-    String _species;
+    std::string _name;
+    std::string _species;
+    std::string _label;
 };
 
 #endif

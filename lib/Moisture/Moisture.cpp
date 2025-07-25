@@ -3,6 +3,6 @@
 
 #define MOISTURE_SENSOR_PIN A0
 
-int Moisture::getMoisture() {
+uint16_t Moisture::getMoisture() {
     return analogRead(MOISTURE_SENSOR_PIN);
 }
