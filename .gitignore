@@ -1,6 +1,5 @@
 .pio
 .vscode
 .idea
-lib/Network/WiFiCredentials.h
 lib/MQTT/MQTTCredentials.h
 lib/Prometheus/Config.h

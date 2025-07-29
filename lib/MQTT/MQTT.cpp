@@ -1,5 +1,4 @@
 #include "MQTT.h"
-#include "Network.h"
 #include "MQTTCredentials.h"
 #include "PubSubClient.h"
 #include "WiFiClient.h"

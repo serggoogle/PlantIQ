@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <PrometheusArduino.h>
 #include "Plant.h"
-#include "Network.h"
 #include "Adafruit_SHT31.h"
 #include "Prometheus.h"
 #include "Moisture.h"
