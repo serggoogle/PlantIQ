@@ -5,17 +5,9 @@
 #include "Prometheus.h"
 #include "Moisture.h"
 #include "MQTT.h"
+#include "config.h"
 
 using namespace std;
-
-constexpr int8_t SHT31_ADDR = 0x44; // Set to 0x45 for alternate i2c addr
-constexpr size_t BATCH_SIZE = 5;
-constexpr size_t NUM_SERIES = 4;
-constexpr size_t BUFFER_SIZE = 1024;
-constexpr const char* PLANT_NAME = "test-plant-1";
-constexpr const char* PLANT_SPECIES = "TestSpecies";
-constexpr float DEFAULT_SENSOR_VALUE = 0.0f;
-constexpr bool DEBUG = true;
 
 Adafruit_SHT31 SHT31_SENSOR = Adafruit_SHT31();
 Plant PLANT(PLANT_NAME, PLANT_SPECIES);
@@ -25,7 +17,7 @@ TimeSeries TEMPERATURE_C_TS(BATCH_SIZE, "temperature_c", LABEL);
 TimeSeries TEMPERATURE_F_TS(BATCH_SIZE, "temperature_f", LABEL);
 TimeSeries HUMIDITY_TS(BATCH_SIZE, "humidity", LABEL);
 TimeSeries MOISTURE_TS(BATCH_SIZE, "moisture", LABEL);
-
+TimeSeries *timeseries[] = {&TEMPERATURE_C_TS, &TEMPERATURE_F_TS, &HUMIDITY_TS, &MOISTURE_TS};
 
 int loopCounter = 0;
 bool enableHeater = false;
@@ -48,11 +40,10 @@ void setup() {
 
     Serial.println("> Instantiating Prometheus:");
     Serial.printf("Prometheus Labels: %s\n",LABEL);
-    PROMETHEUS.setupClients(PLANT.getName(), DEBUG);
-    PROMETHEUS.addTimeSeries(TEMPERATURE_C_TS);
-    PROMETHEUS.addTimeSeries(TEMPERATURE_F_TS);
-    PROMETHEUS.addTimeSeries(HUMIDITY_TS);
-    PROMETHEUS.addTimeSeries(MOISTURE_TS);
+    PROMETHEUS.setupClients(PLANT_NAME, DEBUG);
+    for (TimeSeries* ts : timeseries) {
+        PROMETHEUS.addTimeSeries(*ts);
+    }
     Serial.println("*********************************************************\n");
 }
 
@@ -64,42 +55,38 @@ void loop() {
     float temperature_c, temperature_f, humidity = DEFAULT_SENSOR_VALUE;
     uint16_t moisture = Moisture::getMoisture();
     int64_t time = PROMETHEUS.getTimeMillis();
+    string errorMsg = "";
+
     if (SHT31_SENSOR.readBoth(&temperature_c, &humidity)){
         temperature_f = (temperature_c * 9.0 / 5.0) + 32.0;
-        if (!TEMPERATURE_C_TS.addSample(time, temperature_c)) {
-            Serial.println(TEMPERATURE_C_TS.errmsg);
-        }
-        if (!TEMPERATURE_F_TS.addSample(time, temperature_f)) {
-            Serial.println(TEMPERATURE_F_TS.errmsg);
-        }
-        if(!HUMIDITY_TS.addSample(time, humidity)){
-            Serial.println(HUMIDITY_TS.errmsg);
-        }
     }
     else{
-        Serial.println("Error reading temperature & humidity");
+        Serial.println("Error reading temperature & humidity data from sensor.");
+        temperature_c = temperature_f = humidity = DEFAULT_SENSOR_VALUE;
     }
-    if (moisture < 0) {
-        Serial.println("Error reading moisture");
-        moisture = DEFAULT_SENSOR_VALUE; // Set to default value on error
-    } else {
-        Serial.printf("Moisture: %d\n", moisture);
-        if (!MOISTURE_TS.addSample(time, moisture)) {
-            Serial.println(MOISTURE_TS.errmsg);
-        }
+
+    if (moisture >= MAX_MOISTURE_LEVEL || moisture <= MIN_MOISTURE_LEVEL) {
+        Serial.println("Error reading moisture data from sensor.");
+        moisture = MIN_MOISTURE_LEVEL;
     }
+
+    if (!TEMPERATURE_C_TS.addSample(time, temperature_c) && DEBUG) errorMsg += ("Error adding sample to temperature_c TimeSeries: ") + string(TEMPERATURE_C_TS.errmsg) + '\n';
+    if (!TEMPERATURE_F_TS.addSample(time, temperature_f) && DEBUG) errorMsg += ("Error adding sample to temperature_f TimeSeries: ") + string(TEMPERATURE_F_TS.errmsg) + '\n';
+    if (!HUMIDITY_TS.addSample(time, humidity) && DEBUG) errorMsg += ("Error adding sample to humidity TimeSeries: ") + string(HUMIDITY_TS.errmsg) + '\n';
+    if (!MOISTURE_TS.addSample(time, moisture)) errorMsg += ("Error adding sample to moisture TimeSeries: ") + string(MOISTURE_TS.errmsg) +'\n';
+    Serial.print(errorMsg.c_str());
 
     if (loopCounter >= BATCH_SIZE) {
         //Send after batch is full
         PromClient::SendResult res = PROMETHEUS.client.send(PROMETHEUS.req);
-        if (!res == PromClient::SendResult::SUCCESS) {
+        while (res != PromClient::SendResult::SUCCESS) {
             Serial.printf("Error: Unable to send request(%s)\n", PROMETHEUS.client.errmsg);
+            delay(1000);
         }
         // Reset batches after a successful send.
-        TEMPERATURE_C_TS.resetSamples();
-        TEMPERATURE_F_TS.resetSamples();
-        HUMIDITY_TS.resetSamples();
-        MOISTURE_TS.resetSamples();
+        for (TimeSeries* ts : timeseries) {
+            ts->resetSamples();
+        }
         loopCounter = 0;
     }
     loopCounter++;
