@@ -54,7 +54,7 @@ Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
 ```cpp
 #pragma once
 
-#define MQTT_BROKER "your-mqtt-broker-address"
+#define MQTT_SERVER "your-mqtt-broker-address"
 #define MQTT_PORT 1883
 #define MQTT_USER "your-username"
 #define MQTT_PASSWORD "your-password"
@@ -95,6 +95,10 @@ TODO: Add steps to import the *Plant-Metrics-Template.json* dashboard located un
 ## Build
 
 PlatformIO will be used to compile the C++ code and upload to the Arduino board. We primerly use the `pio` CLI command to build, upload, monitor and clean the project. PlatformIO has an extensive list that documents the usage [here](https://docs.platformio.org/en/latest/core/userguide/index.html#usage), but here's a brief summary of the commands we use and what they do.
+
+```sh
+brew install platformio
+```
 
 `pio run`
 - Compiles (builds) your project and generates the firmware binary for your board.
