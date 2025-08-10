@@ -1,4 +1,4 @@
-# Plant Monitoring Service 🍃🌿☘️
+# Plant Monitoring Platform 🍃🌿☘️
 > A modernized monitoring system that provides insight to a plants lifecylce 🩺
 
 ## Table of Contents
