@@ -58,7 +58,7 @@ public class SensorStreamJob {
         final long numberOfRecords = Long.MAX_VALUE;
         final double MIN_PLANT_TEMP = 0.0;
         final double MAX_PLANT_TEMP = 40.0;
-        String prometheusRemoteWriteUrl = "http://127.0.0.1/api/v1/write";
+        String prometheusRemoteWriteUrl = "http://host.docker.internal:9090/api/v1/write";
 
         // Datagen source
         GeneratorFunction<Long, PrometheusTimeSeries> temperatureGeneratorFunction = index ->

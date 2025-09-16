@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "displayName": "Sensor-Data-Generator"
+  },
+  "spec": {
+    "deploymentTargetId": null,
+    "deploymentTargetName": null,
+    "restoreStrategy": {
+      "kind": "NONE"
+    },
+    "sessionClusterName": null,
+    "state": "CANCELLED",
+    "template": {
+      "spec": {
+        "artifact": {
+          "flinkImageTag": "1.20.1-stream2-scala_2.12-java17",
+          "jarUri": "s3://vvp/artifacts/namespaces/default/sensor-data-generator-1.0.jar",
+          "kind": "JAR"
+        },
+        "flinkConfiguration": {
+          "high-availability.type": "none"
+        },
+        "numberOfTaskManagers": 2,
+        "parallelism": 2,
+        "resources": {
+          "jobmanager": {
+            "cpu": 1,
+            "memory": "1g"
+          },
+          "taskmanager": {
+            "cpu": 1,
+            "memory": "2g"
+          }
+        }
+      }
+    },
+    "upgradeStrategy": {
+      "kind": "STATELESS"
+    }
+  }
+}

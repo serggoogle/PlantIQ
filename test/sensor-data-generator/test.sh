@@ -1,11 +1,12 @@
 #!/bin/bash
 # Simple script to build, upload and restart the flink job using the REST API of Ververica Platform
+JAR="$(find target/ -type f -name "sensor*.jar")"
 _upload_jar(){
   curl -X 'POST' \
     'http://localhost:8080/artifacts/v1/namespaces/default/artifacts:upload' \
     -H 'accept: application/json' \
     -H 'Content-Type: multipart/form-data' \
-    -F 'file=@target/data-gen-1.0-SNAPSHOT.jar'
+    -F "file=@$JAR"
 }
 _deployment_patch(){
   # Update state of the deployment (RUNNING/CANCELLED)
