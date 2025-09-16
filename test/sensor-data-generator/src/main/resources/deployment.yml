@@ -2,7 +2,7 @@ metadata:
   displayName: Sensor-Data-Generator
 spec:
   deploymentTargetId: null
-  deploymentTargetName: null
+  deploymentTargetName: test-target
   restoreStrategy:
     kind: NONE
   sessionClusterName: null

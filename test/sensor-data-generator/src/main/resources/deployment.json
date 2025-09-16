@@ -4,7 +4,7 @@
   },
   "spec": {
     "deploymentTargetId": null,
-    "deploymentTargetName": null,
+    "deploymentTargetName": "test-target",
     "restoreStrategy": {
       "kind": "NONE"
     },
