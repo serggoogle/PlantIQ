@@ -23,6 +23,7 @@ import com.plantmonitoringplatform.sensors.Sensor;
 import com.plantmonitoringplatform.sensors.TemperatureSensor;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
@@ -32,6 +33,8 @@ import org.apache.flink.connector.prometheus.sink.PrometheusTimeSeries;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
+
+import java.util.Map;
 import java.util.Random;
 
 import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders.USER_AGENT;
@@ -61,6 +64,10 @@ public class SensorStreamJob {
         return min + (new Random().nextDouble() * (max - min));
     }
 
+    private static double celsiusToFahrenheit(double temperature){
+        return (temperature * 9/5) + 32;
+    }
+
     public static GeneratorFunction <Long, PrometheusTimeSeries> sensorDataGenerator(Sensor sensor){
         return index ->
                 PrometheusTimeSeries.builder()
@@ -85,7 +92,6 @@ public class SensorStreamJob {
 	public static void main(String[] args) throws Exception {
 		// Sets up the execution environment, which is the main entry point
 		// to building Flink applications.
-        env.setParallelism(1);
         TemperatureSensor temperatureSensor = new TemperatureSensor("temperature_c");
         MoistureSensor moistureSensor = new MoistureSensor("moisture");
         HumiditySensor humiditySensor = new HumiditySensor("humidity");
@@ -95,7 +101,7 @@ public class SensorStreamJob {
         DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor);
 
         // Stream of Datagen data
-        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature Stream");
+        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature_C Stream");
         DataStreamSource<PrometheusTimeSeries> moistureDataStream = sensorDataStream(moistureSource, "Moisture Stream");
         DataStreamSource<PrometheusTimeSeries> humidityDataStream = sensorDataStream(humiditySource, "Humidity Stream");
 
@@ -106,12 +112,14 @@ public class SensorStreamJob {
 
 
         temperatureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
+        temperatureDataStream.map(new TemperatureConversrion()).sinkTo(prometheusSink);
         moistureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
         humidityDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
 
-        temperatureDataStream.flatMap(new TimeSeriesToString()).print();
-        moistureDataStream.flatMap(new TimeSeriesToString()).print();
-        humidityDataStream.flatMap(new TimeSeriesToString()).print();
+//        temperatureDataStream.flatMap(new TimeSeriesToString()).print();
+//        temperatureDataStream.map(new TemperatureConversrion()).flatMap(new TimeSeriesToString()).print();
+//        moistureDataStream.flatMap(new TimeSeriesToString()).print();
+//        humidityDataStream.flatMap(new TimeSeriesToString()).print();
 
         // Execute program, beginning computation.
 		env.execute( "Sensor Stream Job");
@@ -123,7 +131,24 @@ public class SensorStreamJob {
             out.collect(value);
         }
     }
-    
+
+    public static class TemperatureConversrion implements MapFunction<PrometheusTimeSeries, PrometheusTimeSeries> {
+        @Override
+        public PrometheusTimeSeries map(PrometheusTimeSeries series){
+            double sample = -1;
+            long timestamp = 0L;
+            for (PrometheusTimeSeries.Sample seriesSample : series.getSamples()){
+                sample = celsiusToFahrenheit(seriesSample.getValue());
+                timestamp = seriesSample.getTimestamp();
+            }
+            return PrometheusTimeSeries.builder()
+                    .withMetricName("temperature_f")
+                    .addLabel(LABEL_NAME, LABEL_VALUE)
+                    .addSample(sample,timestamp)
+                    .build();
+        }
+    }
+
     public static class TimeSeriesToString implements FlatMapFunction<PrometheusTimeSeries, String> {
         @Override
         public void flatMap(PrometheusTimeSeries value, Collector<String> out) throws Exception {
