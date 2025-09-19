@@ -17,7 +17,10 @@
  */
 
 package com.plantmonitoringplatform;
-
+import com.plantmonitoringplatform.sensors.HumiditySensor;
+import com.plantmonitoringplatform.sensors.MoistureSensor;
+import com.plantmonitoringplatform.sensors.Sensor;
+import com.plantmonitoringplatform.sensors.TemperatureSensor;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -47,47 +50,71 @@ import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
 public class SensorStreamJob {
+    private static final String LABEL_NAME = "plant-name";
+    private static final String LABEL_VALUE = "flink-test-plant";
+    private static final long NUMBER_OF_RECORDS = Long.MAX_VALUE;
+    private static final int RECORDS_PER_SECOND = 1;
+    private static final String PROMETHEUS_URL = "http://host.docker.internal:9090/api/v1/write";
+    static final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
     private static double generateRandomNumber(double min, double max){
         return min + (new Random().nextDouble() * (max - min));
+    }
+
+    public static GeneratorFunction <Long, PrometheusTimeSeries> sensorDataGenerator(Sensor sensor){
+        return index ->
+                PrometheusTimeSeries.builder()
+                        .withMetricName(sensor.getName())
+                        .addLabel(LABEL_NAME, LABEL_VALUE)
+                        .addSample(generateRandomNumber(sensor.getMinThreshold(), sensor.getMaxThreshold()), System.currentTimeMillis())
+                        .build();
+    }
+
+    public static DataGeneratorSource<PrometheusTimeSeries> sensorDataSource(Sensor sensor){
+        return new DataGeneratorSource<>(
+                sensorDataGenerator(sensor),
+                NUMBER_OF_RECORDS,
+                RateLimiterStrategy.perSecond(RECORDS_PER_SECOND),
+                TypeInformation.of(PrometheusTimeSeries.class));
+    }
+
+    public static DataStreamSource<PrometheusTimeSeries> sensorDataStream(DataGeneratorSource<PrometheusTimeSeries> dataSource, String sourceName){
+        return env.fromSource(dataSource, WatermarkStrategy.noWatermarks(), sourceName);
     }
 
 	public static void main(String[] args) throws Exception {
 		// Sets up the execution environment, which is the main entry point
 		// to building Flink applications.
-		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();;
-        final long numberOfRecords = Long.MAX_VALUE;
-        final double MIN_PLANT_TEMP = 0.0;
-        final double MAX_PLANT_TEMP = 40.0;
-        String prometheusRemoteWriteUrl = "http://host.docker.internal:9090/api/v1/write";
+        env.setParallelism(1);
+        TemperatureSensor temperatureSensor = new TemperatureSensor("temperature_c");
+        MoistureSensor moistureSensor = new MoistureSensor("moisture");
+        HumiditySensor humiditySensor = new HumiditySensor("humidity");
 
-        // Datagen source
-        GeneratorFunction<Long, PrometheusTimeSeries> temperatureGeneratorFunction = index ->
-                PrometheusTimeSeries.builder()
-                        .withMetricName("temperature_c")
-                        .addLabel("plant-name", "flink-test-plant")
-                        .addSample(generateRandomNumber(MIN_PLANT_TEMP, MAX_PLANT_TEMP), System.currentTimeMillis())
-                        .build();
-
-        DataGeneratorSource<PrometheusTimeSeries> temperatureSource = new DataGeneratorSource<>(
-                        temperatureGeneratorFunction,
-                        numberOfRecords,
-                        RateLimiterStrategy.perSecond(1),
-                        TypeInformation.of(PrometheusTimeSeries.class));
+        DataGeneratorSource<PrometheusTimeSeries> temperatureSource = sensorDataSource(temperatureSensor);
+        DataGeneratorSource<PrometheusTimeSeries> moistureSource = sensorDataSource(moistureSensor);
+        DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor);
 
         // Stream of Datagen data
-        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = env.fromSource(temperatureSource, WatermarkStrategy.noWatermarks(),"Temperature Sensor");
+        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature Stream");
+        DataStreamSource<PrometheusTimeSeries> moistureDataStream = sensorDataStream(moistureSource, "Moisture Stream");
+        DataStreamSource<PrometheusTimeSeries> humidityDataStream = sensorDataStream(humiditySource, "Humidity Stream");
 
         PrometheusSink prometheusSink = (PrometheusSink) PrometheusSink.builder()
-                .setPrometheusRemoteWriteUrl(prometheusRemoteWriteUrl)
+                .setPrometheusRemoteWriteUrl(PROMETHEUS_URL)
                 .setHttpUserAgent(USER_AGENT)
                 .build();
 
 
         temperatureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
+        moistureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
+        humidityDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
+
         temperatureDataStream.flatMap(new TimeSeriesToString()).print();
+        moistureDataStream.flatMap(new TimeSeriesToString()).print();
+        humidityDataStream.flatMap(new TimeSeriesToString()).print();
 
         // Execute program, beginning computation.
-		env.execute( "Flink Java API Skeleton");
+		env.execute( "Sensor Stream Job");
 	}
 
     public static class TimeSeriesToTimeSeries implements FlatMapFunction<PrometheusTimeSeries, PrometheusTimeSeries> {
@@ -101,11 +128,12 @@ public class SensorStreamJob {
         @Override
         public void flatMap(PrometheusTimeSeries value, Collector<String> out) throws Exception {
             StringBuilder builder = new StringBuilder();
+            builder.append("Metric: " + value.getMetricName());
             for (PrometheusTimeSeries.Label label : value.getLabels()){
-                builder.append("Label Name: " + label.getName() + ", Label value: " + label.getValue());
+                builder.append("\n\tLabel Name: " + label.getName() + ", Label value: " + label.getValue());
             }
             for (PrometheusTimeSeries.Sample sample : value.getSamples()){
-                builder.append("\t↳Sample timeSample " + sample.getTimestamp() + ", Sample value: " + sample.getValue());
+                builder.append("\n\tSample timeSample " + sample.getTimestamp() + ", Sample value: " + sample.getValue());
             }
             out.collect(builder.toString());
         }
