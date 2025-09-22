@@ -29,12 +29,12 @@ import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
 import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.connector.prometheus.sink.PrometheusSink;
+import org.apache.flink.connector.prometheus.sink.PrometheusSinkConfiguration.*;
 import org.apache.flink.connector.prometheus.sink.PrometheusTimeSeries;
+import org.apache.flink.connector.prometheus.sink.PrometheusTimeSeriesLabelsAndMetricNameKeySelector;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
-
-import java.util.Map;
 import java.util.Random;
 
 import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders.USER_AGENT;
@@ -95,26 +95,53 @@ public class SensorStreamJob {
         TemperatureSensor temperatureSensor = new TemperatureSensor("temperature_c");
         MoistureSensor moistureSensor = new MoistureSensor("moisture");
         HumiditySensor humiditySensor = new HumiditySensor("humidity");
-
         DataGeneratorSource<PrometheusTimeSeries> temperatureSource = sensorDataSource(temperatureSensor);
         DataGeneratorSource<PrometheusTimeSeries> moistureSource = sensorDataSource(moistureSensor);
         DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor);
 
         // Stream of Datagen data
-        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature_C Stream");
+        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature-C Stream");
         DataStreamSource<PrometheusTimeSeries> moistureDataStream = sensorDataStream(moistureSource, "Moisture Stream");
         DataStreamSource<PrometheusTimeSeries> humidityDataStream = sensorDataStream(humiditySource, "Humidity Stream");
 
         PrometheusSink prometheusSink = (PrometheusSink) PrometheusSink.builder()
                 .setPrometheusRemoteWriteUrl(PROMETHEUS_URL)
                 .setHttpUserAgent(USER_AGENT)
+                .setRetryConfiguration(
+                        RetryConfiguration.builder()
+                                .setInitialRetryDelayMS(10L)
+                                .setMaxRetryDelayMS(5000L)
+                                .setMaxRetryCount(Integer.MAX_VALUE)
+                                .build()
+                )
+                .setErrorHandlingBehaviorConfiguration(
+                        SinkWriterErrorHandlingBehaviorConfiguration.builder()
+                                .onMaxRetryExceeded(OnErrorBehavior.DISCARD_AND_CONTINUE)
+                                .onPrometheusNonRetryableError(OnErrorBehavior.DISCARD_AND_CONTINUE)
+                                .build()
+                )
                 .build();
 
 
-        temperatureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
-        temperatureDataStream.map(new TemperatureConversrion()).sinkTo(prometheusSink);
-        moistureDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
-        humidityDataStream.flatMap(new TimeSeriesToTimeSeries()).sinkTo(prometheusSink);
+        temperatureDataStream
+                .flatMap(new TimeSeriesToTimeSeries())
+                .keyBy(new PrometheusTimeSeriesLabelsAndMetricNameKeySelector())
+                .sinkTo(prometheusSink).name("Temperature-C-Sink");
+        temperatureDataStream
+                .map(new TemperatureConversion())
+                .keyBy(new PrometheusTimeSeriesLabelsAndMetricNameKeySelector())
+                .sinkTo(prometheusSink)
+                .name("Temperature-F-Sink");
+        moistureDataStream
+                .flatMap(new TimeSeriesToTimeSeries())
+                .keyBy(new PrometheusTimeSeriesLabelsAndMetricNameKeySelector())
+                .sinkTo(prometheusSink)
+                .name("Moisture-Sink");
+        humidityDataStream
+                .flatMap(new TimeSeriesToTimeSeries())
+                .keyBy(new PrometheusTimeSeriesLabelsAndMetricNameKeySelector())
+                .sinkTo(prometheusSink)
+                .name("Humidity-Sink");
 
 //        temperatureDataStream.flatMap(new TimeSeriesToString()).print();
 //        temperatureDataStream.map(new TemperatureConversrion()).flatMap(new TimeSeriesToString()).print();
@@ -132,7 +159,7 @@ public class SensorStreamJob {
         }
     }
 
-    public static class TemperatureConversrion implements MapFunction<PrometheusTimeSeries, PrometheusTimeSeries> {
+    public static class TemperatureConversion implements MapFunction<PrometheusTimeSeries, PrometheusTimeSeries> {
         @Override
         public PrometheusTimeSeries map(PrometheusTimeSeries series){
             double sample = -1;
