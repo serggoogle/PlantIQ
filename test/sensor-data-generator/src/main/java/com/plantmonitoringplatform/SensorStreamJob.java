@@ -37,7 +37,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ParameterTool;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders.USER_AGENT;
 
@@ -59,7 +58,7 @@ public class SensorStreamJob {
     private static final int RECORDS_PER_SECOND = 1;
     private static final String PROMETHEUS_URL = "http://host.docker.internal:9090/api/v1/write";
     static final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+    private static ParameterTool params;
     private static double generateRandomNumber(double min, double max){
         return min + (new Random().nextDouble() * (max - min));
     }
@@ -68,18 +67,19 @@ public class SensorStreamJob {
         return (temperature * 9/5) + 32;
     }
 
-    public static GeneratorFunction <Long, PrometheusTimeSeries> sensorDataGenerator(Sensor sensor, String labelValue){
+    public static GeneratorFunction <Long, PrometheusTimeSeries> sensorDataGenerator(Sensor sensor){
+        final String LABEL_VALUE = params.getRequired("label");
         return index ->
                 PrometheusTimeSeries.builder()
                         .withMetricName(sensor.getName())
-                        .addLabel(LABEL_NAME, labelValue)
+                        .addLabel(LABEL_NAME, LABEL_VALUE)
                         .addSample(generateRandomNumber(sensor.getMinThreshold(), sensor.getMaxThreshold()), System.currentTimeMillis())
                         .build();
     }
 
-    public static DataGeneratorSource<PrometheusTimeSeries> sensorDataSource(Sensor sensor, String labelValue){
+    public static DataGeneratorSource<PrometheusTimeSeries> sensorDataSource(Sensor sensor){
         return new DataGeneratorSource<>(
-                sensorDataGenerator(sensor, labelValue),
+                sensorDataGenerator(sensor),
                 NUMBER_OF_RECORDS,
                 RateLimiterStrategy.perSecond(RECORDS_PER_SECOND),
                 TypeInformation.of(PrometheusTimeSeries.class));
@@ -90,15 +90,15 @@ public class SensorStreamJob {
     }
 
 	public static void main(String[] args) throws Exception {
-        ParameterTool params = ParameterTool.fromArgs(args);
-        final String labelValue = params.getRequired("label");
+        params = ParameterTool.fromArgs(args);
 
         TemperatureSensor temperatureSensor = new TemperatureSensor("temperature_c");
         MoistureSensor moistureSensor = new MoistureSensor("moisture");
         HumiditySensor humiditySensor = new HumiditySensor("humidity");
-        DataGeneratorSource<PrometheusTimeSeries> temperatureSource = sensorDataSource(temperatureSensor, labelValue);
-        DataGeneratorSource<PrometheusTimeSeries> moistureSource = sensorDataSource(moistureSensor, labelValue);
-        DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor, labelValue);
+
+        DataGeneratorSource<PrometheusTimeSeries> temperatureSource = sensorDataSource(temperatureSensor);
+        DataGeneratorSource<PrometheusTimeSeries> moistureSource = sensorDataSource(moistureSensor);
+        DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor);
 
         // Stream of Datagen data
         DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature-C Stream");
