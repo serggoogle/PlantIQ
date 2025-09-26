@@ -3,3 +3,6 @@
 .idea
 lib/MQTT/MQTTCredentials.h
 lib/Prometheus/Config.h
+test/sensor-data-generator/.idea/
+test/sensor-data-generator/target/
+test/sensor-data-generator/src/main/resources/log4j2.properties
