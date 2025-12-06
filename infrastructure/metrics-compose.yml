@@ -1,0 +1,31 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+      - '--web.enable-lifecycle'
+    volumes:
+      - prom_data:/prometheus
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    networks:
+      - infrastructure
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - '3000:3000'
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    networks:
+      - infrastructure
+volumes:
+  prom_data:
+  grafana_storage:
+networks:
+  infrastructure:
+    driver: bridge
