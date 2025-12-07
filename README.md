@@ -6,7 +6,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Build](#build)
-- [Testing](#build)
+- [Testing](#testing)
 - [License](#license)
 ## Overview
 
@@ -32,23 +32,17 @@ For local development, it's recommened to have the following tools installed:
 Tools for Development & Infrastructure:
 * [PlatformIO](https://platformio.org/?utm_source=platformio&utm_medium=piohome) - For Embedded Software Development
 * [Docker w/ Docker Compose](https://docs.docker.com/get-started/) - Containerization technology for building and containerizing your applications
-    * Used for the local infrastructure
+    * Used for the local infrastructure & development container
 
 Tools for future experimental software (Kafka, Flink, etc.):
-* Java 17 JDK
-    * [sdkman](https://sdkman.io) to experiment with differnt java versions.
 * [Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) - open-source platform for automating the deployment, scaling, and management of containerized applications.
 * [Minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fmacos%2Fx86-64%2Fstable%2Fbinary+download) - Local Kubernetes focusing on making it easy to learn and develop for Kubernetes.
 * [k9s](https://k9scli.io/) - A terminal based UI to interact with our Kubernetes clusters.
-
-**Clone the repository**
-   ```sh
-   git clone https://github.com/yourusername/PlantMonitoringPlatform.git
-   ```
+* [sdkman](https://sdkman.io) to experiment with differnt java versions. Using Java 17 for Apache Flink.
 
 ## Credentials Setup
 
-Before building and running the project, you need to create two configuration files to store your credentials. **Do not commit these files to version control if they contain sensitive information.** These files are included in the .gitignore but feel free to double check.
+Before building and running the project, you need to create two configuration files to store your credentials.
 
 ### 1. MQTT Credentials
 Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
@@ -60,8 +54,6 @@ Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
 #define MQTT_USER "your-username"
 #define MQTT_PASSWORD "your-password"
 ```
-Replace the placeholder values with your actual MQTT broker information.
-
 ### 2. Prometheus Credentials
 Create a file at lib/Prometheus/Config.h with the following content:
 ```cpp
@@ -73,8 +65,6 @@ Create a file at lib/Prometheus/Config.h with the following content:
 #define PATH "/api/v1/write"
 #define PORT 9090
 ```
-Replace the placeholder values with your actual WiFi and Prometheus server details.
-
 ## Infrastructure Setup
 The `setup.sh` script will create the containers needed for development & testing.
    * **Note:** Make sure docker is running on your machine.
@@ -94,8 +84,8 @@ Once everything is up, you can access both services:
 
 You can now exec into your development container to compile code.
 ```sh
-docker exec -it dev-container /bin/bash
 # Compile src code
+docker exec -it dev-container /bin/bash
 pio run
 ```
 
@@ -126,32 +116,32 @@ brew install platformio
 
 `pio run -t clean`
 - Removes all build artifacts (compiled files, firmware binaries, etc.) from your project’s .pio build directory, allowing you to do a fresh rebuild next time you compile.
-### Simulation Jar
-
 
 ## Testing
-Apache Flink is being used to simulate plant metrics. Currennly this establishes a data pipeline to Prometheus therefore providing metrics visualization on Grafana.
-
-### Simulation
-The simulatior will create artificial data and send it to Prometheus. You can define however many simulators you want as long as you have the necessary resources.
-
-Ex. We want to create 2 simulators.
-Create a JAR artifact with the latest changes
+Apache Flink jobs are used to simulate plant metrics. This establishes a data pipeline to Prometheus therefore providing metrics visualization on Grafana.
+### Simulation JAR
+There's a sensor data simulator jar that will be utilized to create a flink job. 
 ```sh
+# Create the JAR artifact with the latest changes
 docker exec -it dev-container /bin/bash
 cd test/sensor-data-generator
 mvn clean package
+exit
 ```
+
+### Simulation Setup
+You can define however many simulators you want as long as you have the necessary resources.
+
+Ex. We want to create 2 simulators.
 ```sh
 cd test/
 ./start-sensor-data-generator.sh
-nerator(s)
-Using ac82073f-89e6-4356-9ef9-004063436880_sensor-data-generator-1.0.jar
-Number of running jobs: 
-Available taskslots: 2
-Current number of taskmanagers: 1
-Required number of taskmanagers: 1
-Started sensor-data-sim-1a58f5 with jobid ca43f7936621db5f23229fa97c19556e
-Started sensor-data-sim-d1edbb with jobid d59a80f917e2d7ceadf86152557e6808
+Enter number of data simulators: 2
+...
+Started sensor-data-sim-03e329 with jobid b417df0baf67c559f0ad696a59728dd9
+Started sensor-data-sim-c5127f with jobid 353fdd1bd8ab3f35e743d30f852639f7
 Done
 ```
+You can manage & monitor the simulators in the [Apache Flink Dashboard](http://localhost:8081/#/overview). 
+
+To stop all the simulators, run the `./stop-sensor-data-generator.sh` script.
