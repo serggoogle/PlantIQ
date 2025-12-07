@@ -26,6 +26,7 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
 import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.connector.prometheus.sink.PrometheusSink;
@@ -35,7 +36,6 @@ import org.apache.flink.connector.prometheus.sink.PrometheusTimeSeriesLabelsAndM
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.ParameterTool;
 import java.util.Random;
 
 import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders.USER_AGENT;
@@ -59,6 +59,7 @@ public class SensorStreamJob {
     private static final String PROMETHEUS_URL = "http://host.docker.internal:9090/api/v1/write";
     static final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     private static ParameterTool params;
+
     private static double generateRandomNumber(double min, double max){
         return min + (new Random().nextDouble() * (max - min));
     }
@@ -68,7 +69,7 @@ public class SensorStreamJob {
     }
 
     public static GeneratorFunction <Long, PrometheusTimeSeries> sensorDataGenerator(Sensor sensor){
-        final String LABEL_VALUE = params.getRequired("label");
+        final String LABEL_VALUE = params.getRequired("label").strip();
         return index ->
                 PrometheusTimeSeries.builder()
                         .withMetricName(sensor.getName())
@@ -101,7 +102,7 @@ public class SensorStreamJob {
         DataGeneratorSource<PrometheusTimeSeries> humiditySource = sensorDataSource(humiditySensor);
 
         // Stream of Datagen data
-        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature-C Stream");
+        DataStreamSource<PrometheusTimeSeries> temperatureDataStream = sensorDataStream(temperatureSource, "Temperature Stream");
         DataStreamSource<PrometheusTimeSeries> moistureDataStream = sensorDataStream(moistureSource, "Moisture Stream");
         DataStreamSource<PrometheusTimeSeries> humidityDataStream = sensorDataStream(humiditySource, "Humidity Stream");
 
@@ -150,7 +151,7 @@ public class SensorStreamJob {
 //        humidityDataStream.flatMap(new TimeSeriesToString()).print();
 
         // Execute program, beginning computation.
-		env.execute( "Sensor Stream Job");
+		env.execute("Sensor Stream Job [" + params.getRequired("label").strip() + "]");
 	}
 
     public static class TimeSeriesToTimeSeries implements FlatMapFunction<PrometheusTimeSeries, PrometheusTimeSeries> {
