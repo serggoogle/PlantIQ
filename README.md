@@ -5,7 +5,8 @@
 <!-- "## " is H2. Use this section for easy navigation in large READMEs -->
 - [Overview](#overview)
 - [Installation](#installation)
-- [Buid](#build)
+- [Build](#build)
+- [Testing](#build)
 - [License](#license)
 ## Overview
 
@@ -42,7 +43,7 @@ Tools for future experimental software (Kafka, Flink, etc.):
 
 **Clone the repository**
    ```sh
-   git clone https://github.com/yourusername/PlantMonitoringService.git
+   git clone https://github.com/yourusername/PlantMonitoringPlatform.git
    ```
 
 ## Credentials Setup
@@ -75,25 +76,39 @@ Create a file at lib/Prometheus/Config.h with the following content:
 Replace the placeholder values with your actual WiFi and Prometheus server details.
 
 ## Infrastructure Setup
+The `setup.sh` script will create the containers needed for development & testing.
+   * **Note:** Make sure docker is running on your machine.
    ```sh
-    cd PlantMonitoringService/infra
-    docker compose up -d
+    cd PlantMonitoringPlatform/
+    ./setup.sh
    ```
    Give it a minute and check if the containers are up.
    ```sh
     docker ps -a
    ```
-   * **Note:** Make sure docker is running on your machine or i'll throw some error.
-
 Once everything is up, you can access both services:
 * Grafana: http://localhost:3000/
     * initial username/password is *admin*
 * Prometheus: http://localhost:9090/
+* Apache Flink: http://localhost:8081/
 
-TODO: Add steps to import the *Plant-Metrics-Template.json* dashboard located under infra/grafana/
+You can now exec into your development container to compile code.
+```sh
+docker exec -it dev-container /bin/bash
+# Compile src code
+pio run
+```
+
+## Infrastructure Taredown
+The `taredown.sh` script will give you the option to tare down specific services.
+```sh
+Tare down infrastructure/metrics-compose.yml?[y/n]: 
+Tare down infrastructure/flink-compose.yml?[y/n]: 
+Tare down development environment?[y/n]: 
+```
 
 ## Build
-
+### Emmbedded Software
 PlatformIO will be used to compile the C++ code and upload to the Arduino board. We primerly use the `pio` CLI command to build, upload, monitor and clean the project. PlatformIO has an extensive list that documents the usage [here](https://docs.platformio.org/en/latest/core/userguide/index.html#usage), but here's a brief summary of the commands we use and what they do.
 
 ```sh
@@ -111,5 +126,32 @@ brew install platformio
 
 `pio run -t clean`
 - Removes all build artifacts (compiled files, firmware binaries, etc.) from your project’s .pio build directory, allowing you to do a fresh rebuild next time you compile.
-## Test
-TODO
+### Simulation Jar
+
+
+## Testing
+Apache Flink is being used to simulate plant metrics. Currennly this establishes a data pipeline to Prometheus therefore providing metrics visualization on Grafana.
+
+### Simulation
+The simulatior will create artificial data and send it to Prometheus. You can define however many simulators you want as long as you have the necessary resources.
+
+Ex. We want to create 2 simulators.
+Create a JAR artifact with the latest changes
+```sh
+docker exec -it dev-container /bin/bash
+cd test/sensor-data-generator
+mvn clean package
+```
+```sh
+cd test/
+./start-sensor-data-generator.sh
+nerator(s)
+Using ac82073f-89e6-4356-9ef9-004063436880_sensor-data-generator-1.0.jar
+Number of running jobs: 
+Available taskslots: 2
+Current number of taskmanagers: 1
+Required number of taskmanagers: 1
+Started sensor-data-sim-1a58f5 with jobid ca43f7936621db5f23229fa97c19556e
+Started sensor-data-sim-d1edbb with jobid d59a80f917e2d7ceadf86152557e6808
+Done
+```
