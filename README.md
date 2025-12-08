@@ -22,7 +22,7 @@ This project consists of thee major parts:
 3. Automate Plant Irrigation
 
 
-![High-level System Overview](images/PMS.drawio.svg)
+![High-level System Overview](images/High-Level-Architecture.drawio.svg)
 
 
 ## Installation
@@ -76,7 +76,7 @@ The `setup.sh` script will create the containers needed for development & testin
    ```sh
     docker ps -a
    ```
-Once everything is up, you can access both services:
+Once everything is up, you can access all services:
 * Grafana: http://localhost:3000/
     * initial username/password is *admin*
 * Prometheus: http://localhost:9090/
