@@ -2,7 +2,7 @@
 composeFiles=($(find infrastructure/ -name "*-compose.yml"))
 
 for file in "${composeFiles[@]}"; do
-	read -p "Tear down $file?[y/n]: " -n 1 -r
+	read -p "Teardown $file?[y/n]: " -n 1 -r
 	[[ ! -z "$REPLY" ]] && echo
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
@@ -10,7 +10,7 @@ for file in "${composeFiles[@]}"; do
 	fi
 done
 
-read -p "Tear down development environment?[y/n]: " -n 1 -r
+read -p "Teardown development environment?[y/n]: " -n 1 -r
 [[ ! -z "$REPLY" ]] && echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
