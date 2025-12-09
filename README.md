@@ -1,5 +1,5 @@
-# Plant Monitoring Platform 🍃🌿☘️
-> A modernized monitoring system that provides insight to a plants lifecylce 🩺
+# PlantIQ 🍃🌿☘️
+> A modernized monitoring system that provides insight to a plants lifecylce 🩺♻️
 
 ## Table of Contents
 <!-- "## " is H2. Use this section for easy navigation in large READMEs -->
@@ -7,7 +7,6 @@
 - [Installation](#installation)
 - [Build](#build)
 - [Testing](#testing)
-- [License](#license)
 ## Overview
 
 
@@ -69,7 +68,7 @@ Create a file at lib/Prometheus/Config.h with the following content:
 The `setup.sh` script will create the containers needed for development & testing.
    * **Note:** Make sure docker is running on your machine.
    ```sh
-    cd PlantMonitoringPlatform/
+    cd PlantIQ/
     ./setup.sh
    ```
    Give it a minute and check if the containers are up.
@@ -89,12 +88,12 @@ docker exec -it dev-container /bin/bash
 pio run
 ```
 
-## Infrastructure Taredown
-The `taredown.sh` script will give you the option to tare down specific services.
+## Infrastructure Teardown
+The `teardown.sh` script will give you the option to teardown specific services.
 ```sh
-Tare down infrastructure/metrics-compose.yml?[y/n]: 
-Tare down infrastructure/flink-compose.yml?[y/n]: 
-Tare down development environment?[y/n]: 
+Teardown infrastructure/metrics-compose.yml?[y/n]: 
+Teardown infrastructure/flink-compose.yml?[y/n]: 
+Teardown development environment?[y/n]: 
 ```
 
 ## Build
@@ -144,4 +143,4 @@ Done
 ```
 You can manage & monitor the simulators in the [Apache Flink Dashboard](http://localhost:8081/#/overview). 
 
-To stop all the simulators, run the `./stop-sensor-data-generator.sh` script.
+Run `./stop-sensor-data-generator.sh` to stop all simulators.
