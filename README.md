@@ -47,7 +47,6 @@ Before building and running the project, you need to create two configuration fi
 Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
 ```cpp
 #pragma once
-
 #define MQTT_SERVER "your-mqtt-broker-address"
 #define MQTT_PORT 1883
 #define MQTT_USER "your-username"
@@ -57,10 +56,9 @@ Create a file at `lib/MQTT/MQTTCredentials.h` with the following content:
 Create a file at lib/Prometheus/Config.h with the following content:
 ```cpp
 #pragma once
-
 #define WIFI_SSID "your-wifi-ssid"
 #define WIFI_PASSWORD "your-wifi-password"
-#define URL "PROMETHEUS-SERVER-IP"
+#define URL "host.docker.internal"
 #define PATH "/api/v1/write"
 #define PORT 9090
 ```
@@ -98,7 +96,7 @@ Teardown development environment?[y/n]:
 
 ## Build
 ### Emmbedded Software
-PlatformIO will be used to compile the C++ code and upload to the Arduino board. We primerly use the `pio` CLI command to build, upload, monitor and clean the project. PlatformIO has an extensive list that documents the usage [here](https://docs.platformio.org/en/latest/core/userguide/index.html#usage), but here's a brief summary of the commands we use and what they do.
+PlatformIO will be used to compile the C++ code and upload to the ESP32 board. We primerly use the `pio` CLI command to build, upload, monitor and clean the project. PlatformIO has an extensive list that documents the usage [here](https://docs.platformio.org/en/latest/core/userguide/index.html#usage), but here's a brief summary of the commands we use.
 
 ```sh
 brew install platformio
@@ -131,10 +129,10 @@ exit
 ### Simulation Setup
 You can define however many simulators you want as long as you have the necessary resources.
 
-Ex. We want to create 2 simulators.
+Ex. Create 2 simulators.
 ```sh
 cd test/
-./start-sensor-data-generator.sh
+./start-sim.sh
 Enter number of data simulators: 2
 ...
 Started sensor-data-sim-03e329 with jobid b417df0baf67c559f0ad696a59728dd9
@@ -143,4 +141,4 @@ Done
 ```
 You can manage & monitor the simulators in the [Apache Flink Dashboard](http://localhost:8081/#/overview). 
 
-Run `./stop-sensor-data-generator.sh` to stop all simulators.
+Run `./end-sim.sh` to stop all simulators.
