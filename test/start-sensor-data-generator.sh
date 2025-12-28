@@ -24,7 +24,7 @@ scale_taskmanager(){
 	runningJobs=$(($(total_taskslots) - $(available_taskslots)))
 	totalNumJobs=$(($newNumJobs + $runningJobs))
 	numTaskmanagers=$((($totalNumJobs + 1)/2)) # assuming 2 slots per taskmanager
-	
+	echo "Number of running jobs: $runningJobs"
 	echo "Available taskslots: $(available_taskslots)"
 	echo "Current number of taskmanagers: $(taskmanagers)"
 	echo "Required number of taskmanagers: $numTaskmanagers"
@@ -69,7 +69,6 @@ start_flink_jobs(){
 	TASK_SLOTS=$(available_taskslots)
 	echo "Creating $NUM_OF_JOBS sensor data generator(s)"
 	echo "Using $EXISTING_JAR"
-	echo "Number of running jobs: $runningJobs"
 	
 	scale_taskmanager $NUM_OF_JOBS
 	
