@@ -1,0 +1,16 @@
+{
+    "name": "prometheus",
+    "type": "prometheus",
+    "typeName": "Prometheus",
+    "typeLogoUrl": "public/plugins/prometheus/img/prometheus_logo.svg",
+    "access": "proxy",
+    "url": "http://host.docker.internal:9090",
+    "user": "",
+    "database": "",
+    "basicAuth": false,
+    "isDefault": true,
+    "jsonData": {
+        "pdcInjected": false
+    },
+    "readOnly": false
+}
