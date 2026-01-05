@@ -6,20 +6,24 @@ create_prometheus_ds(){
         echo "Creating Prometheus Datasource..."
         POST_MESSAGE=$(curl -u $GF_DEFAULT_USER_PASS -sS -X POST http://localhost:3000/api/datasources \
         -H 'content-type: application/json' \
-        -d @infrastructure/grafana/Prometheus-Datasource-Template.json | jq -r .message)
+        -d @infrastructure/grafana/datasources/Prometheus-Datasource.json | jq -r .message)
         echo "> $POST_MESSAGE"
         sleep 3
     fi
 }
 
-import_metrics_dashboard(){
-    echo "Importing Dashboard..."
-    DASHBOARD_IMPORTED=$(curl -u $GF_DEFAULT_USER_PASS -sS -X POST http://localhost:3000/api/dashboards/import \
-    -H 'accept: application/json' -H 'Content-Type: application/json' \
-    -d @infrastructure/grafana/Plant-Metrics-Template.json | jq '.imported')
-    if [ "$DASHBOARD_IMPORTED" = "true" ]; then
-        echo "> Dashboard successfully imported"
-    fi
+import_dashboards(){
+    echo "Importing Dashboards..."
+    dashboards=($(ls infrastructure/grafana/dashboards))
+    for dashboard in "${dashboards[@]}"; do
+        DASHBOARD_IMPORTED=$(curl -u $GF_DEFAULT_USER_PASS -sS -X POST http://localhost:3000/api/dashboards/import \
+        -H 'accept: application/json' -H 'Content-Type: application/json' \
+        -d @infrastructure/grafana/dashboards/$dashboard | jq '.imported')
+        if [ "$DASHBOARD_IMPORTED" = "true" ]; then
+            echo "> $dashboard dashboard successfully imported"
+        fi
+        sleep 1
+    done
 }
 
 setup_dev_environment() {
@@ -37,18 +41,22 @@ setup_dev_environment() {
 
 setup_grafana(){
     echo "Setting up Grafana..."
-    sleep 2
+    sleep 3
     create_prometheus_ds
-    import_metrics_dashboard
+    import_dashboards
 }
 
 setup_infrastructure() {
     echo "Setting up metrics infrastructure..."
-    docker-compose -f infrastructure/metrics-compose.yml -f infrastructure/flink-compose.yml up -d --wait
-    if [ $? -ne 0 ]; then
-        echo "Failed to build infrastructure services."
-        exit 1
-    fi
+    composeFiles=($(ls infrastructure/*.yml))
+
+    for file in "${composeFiles[@]}"; do
+        docker-compose -f $file up -d --wait
+        if [ $? -ne 0 ]; then
+            echo "Failed to build $file infrastructure services."
+            exit 1
+        fi
+    done
     echo "All Services are up and running"
 }
 
