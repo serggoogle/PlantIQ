@@ -7,6 +7,7 @@ services:
       - '--web.enable-lifecycle'
     volumes:
       - prom_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - 9090:9090
     restart: unless-stopped
