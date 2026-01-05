@@ -1,4 +1,5 @@
 {
+  "dashboard": {
   "__inputs": [
     {
       "name": "DS_PROMETHEUS",
@@ -27,7 +28,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "12.0.1+security-01"
+      "version": "12.2.1"
     },
     {
       "type": "datasource",
@@ -81,7 +82,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "red"
+                "color": "red",
+                "value": 0
               },
               {
                 "color": "red",
@@ -131,7 +133,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "12.0.1+security-01",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
@@ -147,7 +149,7 @@
           "includeNullMetadata": true,
           "instant": false,
           "interval": "",
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{plant-name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -174,7 +176,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "red"
+                "color": "red",
+                "value": 0
               },
               {
                 "color": "red",
@@ -224,7 +227,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "12.0.1+security-01",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
@@ -240,7 +243,7 @@
           "includeNullMetadata": true,
           "instant": false,
           "interval": "",
-          "legendFormat": "__auto",
+          "legendFormat": "{{plant-name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -283,6 +286,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -297,7 +301,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -328,7 +333,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.0.1+security-01",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
@@ -340,7 +345,7 @@
           "expr": "humidity",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{plant-name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -383,6 +388,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -397,7 +403,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -428,7 +435,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.0.1+security-01",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
@@ -440,7 +447,7 @@
           "expr": "moisture",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{plant-name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -489,7 +496,8 @@
             "mode": "percentage",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -549,7 +557,7 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 100
       },
-      "pluginVersion": "12.0.1+security-01",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
@@ -561,7 +569,7 @@
           "expr": "temperature_c",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{plant-name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -572,19 +580,29 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 41,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Plant Metrics",
   "uid": "7adb0b26-d5d4-474d-b209-d9c283a84c73",
-  "version": 29,
+  "version": 1,
   "weekStart": ""
+},
+  "folderUid": "",
+  "inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "pluginId": "prometheus",
+      "type": "datasource"
+    }
+  ],
+  "overwrite": true
 }
