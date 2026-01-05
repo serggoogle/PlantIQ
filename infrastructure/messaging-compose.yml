@@ -1,0 +1,12 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - 5552:5552
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - infrastructure
+networks:
+  infrastructure:
+    driver: bridge
