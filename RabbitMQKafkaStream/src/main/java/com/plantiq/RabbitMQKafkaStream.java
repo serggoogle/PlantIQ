@@ -27,21 +27,10 @@ import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Skeleton for a Flink DataStream Job.
- *
- * <p>For a tutorial how to write a Flink application, check the
- * tutorials and examples on the <a href="https://flink.apache.org">Flink Website</a>.
- *
- * <p>To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * <p>If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
- */
 public class RabbitMQKafkaStream {
     // TODO: Investigate using ENV variables instead since
     private static final String HOST = "host.docker.internal";
@@ -78,13 +67,15 @@ public class RabbitMQKafkaStream {
     }
 
 	public static void main(String[] args) throws Exception {
-        HashMap<String, DataStream<String>> queueStreamMap = new HashMap<>();
+        HashMap<String, DataStreamSource<String>> queueStreamMap = new HashMap<>();
         List<String> queues = new ArrayList<>();
-        ArrayList<DataStream<String>> RMQStreams = new ArrayList<>();
-        queues.add("temperature-f");
-        queues.add("temperature-c");
-        queues.add("humidity");
-        queues.add("moisture");
+        Collections.addAll(
+                queues,
+                "temperature-f",
+                "temperature-c",
+                "humidity",
+                "moisture"
+        );
         env = StreamExecutionEnvironment.getExecutionEnvironment();
         final RMQConnectionConfig rmqConfig = new RMQConnectionConfig.Builder()
                 .setHost(HOST)
@@ -107,6 +98,6 @@ public class RabbitMQKafkaStream {
 
         // TODO: Define Kafka Sink
 
-		env.execute("Flink Java API Skeleton");
+		env.execute("RabbitMQKafkaStream");
 	}
 }

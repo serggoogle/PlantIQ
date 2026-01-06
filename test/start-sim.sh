@@ -16,7 +16,7 @@ total_taskslots() {
 }
 
 available_taskslots() {
-    curl -sS "$HOST/taskmanagers" \
+   curl -sS "$HOST/taskmanagers" \
     | jq '[.taskmanagers[].freeSlots] | add'
 }
 
