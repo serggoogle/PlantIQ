@@ -78,7 +78,7 @@ public class RabbitMQKafkaStream {
     }
 
 	public static void main(String[] args) throws Exception {
-        HashMap<String, ArrayList<DataStream<String>>> queueStreamMap = new HashMap<>();
+        HashMap<String, DataStream<String>> queueStreamMap = new HashMap<>();
         List<String> queues = new ArrayList<>();
         ArrayList<DataStream<String>> RMQStreams = new ArrayList<>();
         queues.add("temperature-f");
@@ -96,13 +96,14 @@ public class RabbitMQKafkaStream {
 
         // TODO: Define RabbitMQ Sources
         for (String queue : queues){
-            RMQStreams.add(env.addSource(RMQSourceStream(rmqConfig, queue)));
+            queueStreamMap.put(queue,
+                    env.addSource(RMQSourceStream(rmqConfig, queue)));
         }
 
         // Temp print - implement kafka sink later.
-        for (HashMap<,>: queueStreamMap){
-            source.map(new printDebugger()).print();
-        }
+        queueStreamMap.forEach((queue, source) ->
+                source.map(new printDebugger(queue)).print()
+        );
 
         // TODO: Define Kafka Sink
 
