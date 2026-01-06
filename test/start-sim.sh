@@ -2,19 +2,21 @@
 
 JAR_PATH="sensor-data-generator/target/sensor-data-generator-1.0.jar"
 EXISTING_JAR=()
+HOST="http://localhost:8082"
+COMPOSE="simulation-engine-compose.yml"
 
 taskmanagers() {
-    curl -sS http://localhost:8081/taskmanagers \
+    curl -sS "$HOST/taskmanagers" \
     | jq '.taskmanagers | length'
 }
 
 total_taskslots() {
-    curl -sS http://localhost:8081/taskmanagers \
+    curl -sS "$HOST/taskmanagers" \
     | jq '[.taskmanagers[].slotsNumber] | add'
 }
 
 available_taskslots() {
-    curl -sS http://localhost:8081/taskmanagers \
+    curl -sS "$HOST/taskmanagers" \
     | jq '[.taskmanagers[].freeSlots] | add'
 }
 
@@ -31,13 +33,13 @@ scale_taskmanager(){
 
 	if [[ "$numTaskmanagers" -gt  $(taskmanagers) ]]; then
 		echo "Scaling taskmanager to accommodate $totalNumJobs jobs (taskmanagers=$numTaskmanagers)"
-		docker compose -f ../infrastructure/flink-compose.yml scale taskmanager=$numTaskmanagers
+		docker compose -f $COMPOSE scale taskmanager-sim-engine=$numTaskmanagers
 		sleep 3
 	fi	
 }
 
 get_jar(){
-	EXISTING_JAR=($(curl -sS -X GET --url http://localhost:8081/v1/jars | jq -r ".files[].id"))
+	EXISTING_JAR=($(curl -sS -X GET --url "$HOST/v1/jars" | jq -r ".files[].id"))
 }
 
 delete_jar(){
@@ -46,14 +48,14 @@ delete_jar(){
  		echo "Removing existing jar files..."
 		for file in "${EXISTING_JAR[@]}"; do
 			echo " ↳$file"
-			curl -sS -X DELETE --url http://localhost:8081/v1/jars/${file} > /dev/null
+			curl -sS -X DELETE --url "$HOST/v1/jars/${file}" > /dev/null
 		done
 	fi
 }
 
 upload_jar(){
 	echo "Uploading latest jar..."
-	res=$(curl -sS -X POST --url http://localhost:8081/v1/jars/upload --header 'content-type: multipart/form-data' -F "jarfile=@${JAR_PATH}" | jq -r ".status")
+	res=$(curl -sS -X POST --url "$HOST/v1/jars/upload" --header 'content-type: multipart/form-data' -F "jarfile=@${JAR_PATH}" | jq -r ".status")
 
 	if [[ ! ${res} = "success" ]]; then
 		echo "Please check that Flink is running and the jar file exists at ${JAR_PATH}"
@@ -73,10 +75,19 @@ start_flink_jobs(){
 	scale_taskmanager $NUM_OF_JOBS
 	
 	for ((i=1; i < $NUM_OF_JOBS + 1; i++)); do
-		local label="sensor-data-sim-$(openssl rand -hex 3)"
-		jobId=$(curl -sS -X POST --url "http://localhost:8081/v1/jars/${EXISTING_JAR}/run?programArg=--label%2C%20$label" | jq -r '.jobid')
+		local label="sim-$(openssl rand -hex 3)"
+		jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run?programArg=--label%2C%20$label" | jq -r '.jobid')
+		if [ "$jobId" == "null" ]; then
+			echo "Error submitting job. Please look at the Flink logs for more details"
+			exit 1
+		fi
 		echo Started $label with jobid $jobId
 	done
+}
+
+create_flink_resources(){
+	echo "Creating flink simulation engine..."
+	docker compose -f $COMPOSE up -d  && sleep 3 || exit 1
 }
 
 while true; do
@@ -88,6 +99,6 @@ while true; do
 	fi
 done
 
+create_flink_resources
 start_flink_jobs
-
 echo "Done"

@@ -17,7 +17,7 @@ services:
     image: grafana/grafana-enterprise
     restart: unless-stopped
     ports:
-     - '3000:3000'
+      - '3000:3000'
     volumes:
       - grafana_storage:/var/lib/grafana
     networks:

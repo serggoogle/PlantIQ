@@ -1,12 +1,32 @@
 #!/bin/bash
 composeFiles=($(find infrastructure/ -name "*-compose.yml"))
 volumes=($(docker volume ls | grep infrastructure_ | awk '{print $2}'))
+TEARDOWN_ALL_SERVICES="$1"
 
 delete_infrastructure_volumes(){
 	for volume in "${volumes[@]}"; do
 		docker volume rm $volume > /dev/null && echo "$volume deleted"
 	done
 }
+
+taredown_dev_environment(){
+    if [ "$(docker ps -a -q -f name=dev-container)" ]; then
+    	docker stop dev-container > /dev/null  && docker rm dev-container > /dev/null
+		echo "Removed dev container."
+    fi
+}
+
+taredown_all_services(){
+	for file in "${composeFiles[@]}"; do
+		docker compose -f $file down
+	done
+	delete_infrastructure_volumes
+}
+
+if [[ "$TEARDOWN_ALL_SERVICES" == "-a" ]]; then
+	taredown_all_services
+	exit 0
+fi
 
 for file in "${composeFiles[@]}"; do
 	read -p "Teardown $file?[y/n]: " -n 1 -r
@@ -25,8 +45,5 @@ fi
 read -p "Teardown development environment?[y/n]: " -n 1 -r
 [[ ! -z "$REPLY" ]] && echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if [ "$(docker ps -a -q -f name=dev-container)" ]; then
-    	docker stop dev-container > /dev/null  && docker rm dev-container > /dev/null
-		echo "Removed dev container."
-    fi
+	taredown_dev_environment
 fi
