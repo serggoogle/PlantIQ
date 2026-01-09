@@ -12,7 +12,9 @@ services:
       - 9090:9090
     restart: unless-stopped
     networks:
-      - infrastructure
+      - metrics
+      - flink
+      - simulator
   grafana:
     image: grafana/grafana-enterprise
     restart: unless-stopped
@@ -21,10 +23,14 @@ services:
     volumes:
       - grafana_storage:/var/lib/grafana
     networks:
-      - infrastructure
+      - metrics
 volumes:
   prom_data:
   grafana_storage:
 networks:
-  infrastructure:
-    driver: bridge
+  metrics:
+    external: true
+  flink:
+    external: true
+  simulator:
+    external: true

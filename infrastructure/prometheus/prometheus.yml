@@ -32,8 +32,6 @@ scrape_configs:
           app: "prometheus"
 
   - job_name: "flink"
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
     dns_sd_configs:
       - names:
           - jobmanager
@@ -41,5 +39,11 @@ scrape_configs:
         port: 9249
       - names:
           - taskmanager
+        type: A
+        port: 9250
+  - job_name: "simulator"
+    dns_sd_configs:
+      - names:
+          - simulator-taskmanager
         type: A
         port: 9250

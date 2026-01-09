@@ -93,7 +93,7 @@ public class RabbitMQKafkaStream {
 
         // Temp print - implement kafka sink later.
         queueStreamMap.forEach((queue, source) ->
-                source.map(new printDebugger(queue)).print()
+                source.map(new printDebugger(queue)).shuffle().print().name(queue)
         );
 
         // TODO: Define Kafka Sink

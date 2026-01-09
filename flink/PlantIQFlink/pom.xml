@@ -21,20 +21,20 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.plantiq</groupId>
-	<artifactId>sensor-data-generator</artifactId>
+	<artifactId>PlantIQFlink</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>Sensor Data Generator Flink Job</name>
+	<name>PlantIQFlink</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<flink.version>1.19.3</flink.version>
-		<target.java.version>17</target.java.version>
+		<target.java.version>1.8</target.java.version>
 		<scala.binary.version>2.12</scala.binary.version>
 		<maven.compiler.source>${target.java.version}</maven.compiler.source>
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
-		<log4j.version>2.24.3</log4j.version>
+		<log4j.version>2.17.1</log4j.version>
 	</properties>
 
 	<repositories>
@@ -46,7 +46,7 @@ under the License.
 				<enabled>false</enabled>
 			</releases>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
@@ -68,32 +68,19 @@ under the License.
 		</dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-core</artifactId>
-            <version>${flink.version}</version>
-			<scope>provided</scope>
+            <artifactId>flink-connector-rabbitmq</artifactId>
+            <version>3.0.1-1.17</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-datagen</artifactId>
-            <version>2.1.0</version>
-			<scope>compile</scope>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>3.3.0-1.19</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-files</artifactId>
-            <version>2.1.0</version>
-			<scope>compile</scope>
-        </dependency>
-        <dependency>
+		<dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-prometheus</artifactId>
             <version>1.0.0-1.19</version>
 			<scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-rabbitmq</artifactId>
-            <version>3.0.1-1.17</version>
         </dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -167,8 +154,11 @@ under the License.
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.plantiq.SensorStreamJob</mainClass>
+                                    <mainClass>com.plantiq.SensorStreamJob</mainClass>
 								</transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.plantiq.RabbitMQKafkaStream</mainClass>
+                                </transformer>
 							</transformers>
 						</configuration>
 					</execution>

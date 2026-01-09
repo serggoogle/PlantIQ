@@ -56,7 +56,7 @@ import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders
 public class SensorStreamJob {
     private static final String LABEL_NAME = "plant-name";
     private static final long NUMBER_OF_RECORDS = Long.MAX_VALUE;
-    private static final int RECORDS_PER_SECOND = 100;
+    private static final int RECORDS_PER_SECOND = 20000;
     private static final String HOST = "host.docker.internal";
     private static final String RABBITMQ_VIRTUAL_HOST = "/";
     private static final String RABBITMQ_USERNAME = "guest";
@@ -128,22 +128,22 @@ public class SensorStreamJob {
 //                .build();
 
         // Sensor streams to Rabbitmq
-        temperatureDataStream.map(new DoubleToStringMapper()).addSink(new RMQSink<>(
+        temperatureDataStream.map(new DoubleToStringMapper()).rebalance().addSink(new RMQSink<>(
            connectionConfig,
            "temperature-c",
             new SimpleStringSchema()
         )).name("Temperature-C-Sink");
-        temperatureDataStream.map(new TemperatureConversion()).map(new DoubleToStringMapper()).addSink(new RMQSink<>(
+        temperatureDataStream.map(new TemperatureConversion()).map(new DoubleToStringMapper()).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
                 "temperature-f",
                 new SimpleStringSchema()
         )).name("Temperature-F-Sink");
-        moistureDataStream.map(new DoubleToStringMapper()).addSink(new RMQSink<>(
+        moistureDataStream.map(new DoubleToStringMapper()).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
                 "moisture",
                 new SimpleStringSchema()
         )).name("Moisture-Sink");
-        humidityDataStream.map(new DoubleToStringMapper()).addSink(new RMQSink<>(
+        humidityDataStream.map(new DoubleToStringMapper()).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
                 "humidity",
                 new SimpleStringSchema()
