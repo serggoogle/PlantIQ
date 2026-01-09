@@ -1,4 +1,4 @@
-package com.plantmonitoringplatform.sensors;
+package com.plantiq.sensors;
 
 public class MoistureSensor extends Sensor {
     final double MIN_MOISTURE_LEVEL = 0.0;

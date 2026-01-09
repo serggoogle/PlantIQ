@@ -1,4 +1,4 @@
-package com.plantmonitoringplatform.sensors;
+package com.plantiq.sensors;
 
 public class TemperatureSensor extends Sensor {
     final double MIN_TEMP_C = 0.0;

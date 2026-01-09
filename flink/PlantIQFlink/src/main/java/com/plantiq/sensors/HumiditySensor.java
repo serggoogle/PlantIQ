@@ -1,4 +1,4 @@
-package com.plantmonitoringplatform.sensors;
+package com.plantiq.sensors;
 
 public class HumiditySensor extends Sensor {
     final double MIN_HUMIDITY_LEVEL = 0.0;

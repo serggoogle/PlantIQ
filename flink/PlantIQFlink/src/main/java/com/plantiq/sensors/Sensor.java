@@ -1,4 +1,4 @@
-package com.plantmonitoringplatform.sensors;
+package com.plantiq.sensors;
 import java.io.Serializable;
 
 public class Sensor implements Serializable {

@@ -11,15 +11,16 @@ RUN <<EOF
 		ln -s ~/.platformio/penv/bin/platformio /usr/local/bin/platformio && \
 		ln -s ~/.platformio/penv/bin/pio /usr/local/bin/pio && \
 		ln -s ~/.platformio/penv/bin/piodebuggdb /usr/local/bin/piodebuggdb
-	mkdir /opt/plant-monitoring-platform
+	mkdir /opt/PlantIQ
 EOF
 
 
 SHELL ["/bin/bash", "-c"]
+RUN echo "alias build-flink-jar='cd /opt/PlantIQ/flink/PlantIQFlink && mvn clean package'" >> ~/.bashrc
+RUN echo "alias clean-flink-target='cd /opt/PlantIQ/flink/PlantIQFlink && mvn clean'" >> ~/.bashrc
 RUN curl -s "https://get.sdkman.io" | bash
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" && \
 	sdk install java 17.0.11-tem && \
 	sdk install maven 3.8.6
-
-WORKDIR /opt/plant-monitoring-platform
+WORKDIR /opt/PlantIQ
 CMD ["tail", "-f", "/dev/null"]

@@ -87,12 +87,7 @@ pio run
 ```
 
 ## Infrastructure Teardown
-The `teardown.sh` script will give you the option to teardown specific services.
-```sh
-Teardown infrastructure/metrics-compose.yml?[y/n]: 
-Teardown infrastructure/flink-compose.yml?[y/n]: 
-Teardown development environment?[y/n]: 
-```
+The `teardown.sh` script will give you the option to teardown specific services or everything with the `-a` flag.
 
 ## Build
 ### Emmbedded Software
@@ -121,7 +116,7 @@ There's a sensor data simulator jar that will be utilized to create a flink job.
 ```sh
 # Create the JAR artifact with the latest changes
 docker exec -it dev-container /bin/bash
-cd test/sensor-data-generator
+cd flink/PlantIQFlink
 mvn clean package
 exit
 ```
@@ -131,14 +126,14 @@ You can define however many simulators you want as long as you have the necessar
 
 Ex. Create 2 simulators.
 ```sh
-cd test/
-./start-sim.sh
+cd flink/simulator/
+./start-simulator.sh
 Enter number of data simulators: 2
 ...
-Started sensor-data-sim-03e329 with jobid b417df0baf67c559f0ad696a59728dd9
-Started sensor-data-sim-c5127f with jobid 353fdd1bd8ab3f35e743d30f852639f7
+Started simulator-03e329 with jobid b417df0baf67c559f0ad696a59728dd9
+Started simulator-c5127f with jobid 353fdd1bd8ab3f35e743d30f852639f7
 Done
 ```
 You can manage & monitor the simulators in the [Apache Flink Dashboard](http://localhost:8081/#/overview). 
 
-Run `./end-sim.sh` to stop all simulators.
+Run `./end-simulator.sh` to stop all simulator jobs.
