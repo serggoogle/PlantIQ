@@ -15,6 +15,8 @@ services:
         metrics.reporter.prom.host: host.docker.internal
     networks:
       - flink
+      - messaging
+      - simulator
   taskmanager:
     image: flink:1.20.3-scala_2.12-java17
     expose:
@@ -34,9 +36,12 @@ services:
         metrics.reporter.prom.port: 9250-9260
     networks:
       - flink
+      - messaging
       - simulator
 networks:
   flink:
+    external: true
+  messaging:
     external: true
   simulator:
     external: true

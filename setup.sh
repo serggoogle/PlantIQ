@@ -65,7 +65,7 @@ setup_infrastructure() {
     echo "Setting up metrics infrastructure..."
     composeFiles=($(ls infrastructure/*.yml))
     for file in "${composeFiles[@]}"; do
-        docker-compose -f $file up -d --wait
+        docker-compose -f "$file" up -d --wait
         if [ $? -ne 0 ]; then
             echo "Failed to build $file infrastructure services."
             exit 1

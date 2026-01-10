@@ -56,7 +56,7 @@ import static org.apache.flink.shaded.curator5.com.google.common.net.HttpHeaders
 public class SensorStreamJob {
     private static final String LABEL_NAME = "plant-name";
     private static final long NUMBER_OF_RECORDS = Long.MAX_VALUE;
-    private static final int RECORDS_PER_SECOND = 20000;
+    private static final int RECORDS_PER_SECOND = 2000;
     private static final String HOST = "host.docker.internal";
     private static final String RABBITMQ_VIRTUAL_HOST = "/";
     private static final String RABBITMQ_USERNAME = "guest";
