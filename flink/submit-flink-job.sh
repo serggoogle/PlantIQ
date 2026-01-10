@@ -81,6 +81,7 @@ upload_jar(){
 	fi
 	get_jar
 }
+
 start_flink_jobs(){
 	upload_jar
 	TASK_SLOTS=$(available_taskslots)
