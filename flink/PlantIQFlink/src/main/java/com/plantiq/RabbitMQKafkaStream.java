@@ -20,6 +20,9 @@ package com.plantiq;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -37,6 +40,8 @@ public class RabbitMQKafkaStream {
     private static final String RABBITMQ_VIRTUAL_HOST = "/";
     private static final String RABBITMQ_USERNAME = "guest";
     private static final String RABBITMQ_PASSWORD = "guest";
+    private static final String KAFKA_BOOTSTRAP_SERVER = "broker:9092";
+    private static final String KAFKA_TOPIC = "test-topic";
     private static StreamExecutionEnvironment env;
 
     private static RMQSource<String> RMQSourceStream(RMQConnectionConfig config, String queueName){
@@ -59,7 +64,6 @@ public class RabbitMQKafkaStream {
     }
 
     private static class StringToDoubleMapper implements MapFunction<String, Double> {
-
         @Override
         public Double map(String s) throws Exception {
             return Double.parseDouble(s);
@@ -85,18 +89,28 @@ public class RabbitMQKafkaStream {
                 .setPassword(RABBITMQ_PASSWORD)
                 .build();
 
-        // TODO: Define RabbitMQ Sources
         for (String queue : queues){
             queueStreamMap.put(queue,
-                    env.addSource(RMQSourceStream(rmqConfig, queue)));
+                    env.addSource(RMQSourceStream(rmqConfig, queue), "RMQ-"+queue));
         }
 
         // Temp print - implement kafka sink later.
-        queueStreamMap.forEach((queue, source) ->
-                source.map(new printDebugger(queue)).shuffle().print().name(queue)
-        );
+        //queueStreamMap.forEach((queue, source) ->
+        //        source.map(new printDebugger(queue)).shuffle().print().name(queue)
+        //);
 
-        // TODO: Define Kafka Sink
+        queueStreamMap.forEach((queue, source) ->
+                source.sinkTo(KafkaSink.<String>builder()
+                        .setBootstrapServers(KAFKA_BOOTSTRAP_SERVER)
+                        .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                                .setTopic(queue)
+                                .setValueSerializationSchema(new SimpleStringSchema())
+                                .build()
+                        )
+                        .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                        .build())
+                .name("Kafka-"+queue)
+        );
 
 		env.execute("RabbitMQKafkaStream");
 	}

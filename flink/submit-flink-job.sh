@@ -8,6 +8,7 @@ HOST="http://localhost:8081"
 COMPOSE="flink-compose.yml"
 JOB_PARAMETERS=""
 TASKMANAGER_NAME="taskmanager"
+NUM_OF_JOBS="1"
 
 taskmanagers() {
     curl -sS "$HOST/taskmanagers" \
@@ -81,19 +82,7 @@ upload_jar(){
 	get_jar
 }
 
-get_num_of_jobs(){
-	while true; do
-		read -p "Enter number of Flink jobs to submit: " NUM_OF_JOBS
-		if ! [[ "$NUM_OF_JOBS" =~ ^[0-9]+$ && "$NUM_OF_JOBS" -gt -1 ]]; then
-			echo "Error: Please enter a valid number (0+ jobs)"
-		else
-			break;
-		fi
-	done
-}
-
 start_flink_jobs(){
-	get_num_of_jobs
 	upload_jar
 	TASK_SLOTS=$(available_taskslots)
 	echo "Creating $NUM_OF_JOBS jobs"
@@ -101,7 +90,7 @@ start_flink_jobs(){
 	scale_taskmanager $NUM_OF_JOBS
 	for ((i=1; i < $NUM_OF_JOBS + 1; i++)); do
 	    if [ "$SIMULATION_ENGINE" = true ] ; then
-			local label="sim-$(openssl rand -hex 3)"
+			local label="simulator-$(openssl rand -hex 3)"
 			jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run?${JOB_PARAMETERS}${label}" | jq -r '.jobid')
 		else
 			jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run" | jq -r '.jobid')
@@ -123,7 +112,7 @@ usage() {
 		echo "  -c compose-file   Docker compose file to use (default: $COMPOSE)"
 }
 
-while getopts ":f:sH:c:h" opt; do
+while getopts ":f:sH:c:hn:" opt; do
 	case ${opt} in
 		s )
 			SIMULATION_ENGINE=true
@@ -140,6 +129,9 @@ while getopts ":f:sH:c:h" opt; do
 		f )
 			JAR_PATH="$OPTARG"
 			;;
+	  n)
+	    NUM_OF_JOBS="$OPTARG"
+	    ;;
 		h )
 			usage
 			exit 0
