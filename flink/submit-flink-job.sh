@@ -89,7 +89,7 @@ start_flink_jobs(){
 	scale_taskmanager $NUM_OF_JOBS
 	for ((i=1; i < $NUM_OF_JOBS + 1; i++)); do
 	    if [ "$SIMULATION_ENGINE" = true ] ; then
-			local label="sim-$(openssl rand -hex 3)"
+			local label="simulator-$(openssl rand -hex 3)"
 			jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run?${JOB_PARAMETERS}${label}" | jq -r '.jobid')
 		else
 			jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run" | jq -r '.jobid')
