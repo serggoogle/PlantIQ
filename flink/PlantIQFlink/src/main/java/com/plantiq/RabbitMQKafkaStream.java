@@ -20,19 +20,18 @@ package com.plantiq;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
-import org.apache.flink.connector.base.DeliveryGuarantee;
-import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.formats.json.JsonSerializationSchema;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class RabbitMQKafkaStream {
     // TODO: Investigate using ENV variables instead since
@@ -40,6 +39,7 @@ public class RabbitMQKafkaStream {
     private static final String RABBITMQ_VIRTUAL_HOST = "/";
     private static final String RABBITMQ_USERNAME = "guest";
     private static final String RABBITMQ_PASSWORD = "guest";
+    private static final short RABBITMQ_PORT = 5672;
     private static final String KAFKA_BOOTSTRAP_SERVER = "broker:9092";
     private static final String KAFKA_TOPIC = "test-topic";
     private static StreamExecutionEnvironment env;
@@ -53,20 +53,9 @@ public class RabbitMQKafkaStream {
     }
 
     private static class printDebugger implements MapFunction<String, String> {
-        private String queueName = null;
-        public printDebugger(String queueName){
-            this.queueName = queueName;
-        }
         @Override
-        public String map(String s){
-            return queueName +": " + s;
-        }
-    }
-
-    private static class StringToDoubleMapper implements MapFunction<String, Double> {
-        @Override
-        public Double map(String s) throws Exception {
-            return Double.parseDouble(s);
+        public String map(String s) throws Exception {
+            return s;
         }
     }
 
@@ -83,7 +72,7 @@ public class RabbitMQKafkaStream {
         env = StreamExecutionEnvironment.getExecutionEnvironment();
         final RMQConnectionConfig rmqConfig = new RMQConnectionConfig.Builder()
                 .setHost(HOST)
-                .setPort(5672)
+                .setPort(RABBITMQ_PORT)
                 .setVirtualHost(RABBITMQ_VIRTUAL_HOST)
                 .setUserName(RABBITMQ_USERNAME)
                 .setPassword(RABBITMQ_PASSWORD)
@@ -95,16 +84,19 @@ public class RabbitMQKafkaStream {
         }
 
         // Temp print - implement kafka sink later.
-        //queueStreamMap.forEach((queue, source) ->
-        //        source.map(new printDebugger(queue)).shuffle().print().name(queue)
-        //);
+        queueStreamMap.forEach((queue, source) ->
+                source.map(new printDebugger()).rebalance().print().name(queue)
+        );
 
         queueStreamMap.forEach((queue, source) ->
                 source.sinkTo(KafkaSink.<String>builder()
                         .setBootstrapServers(KAFKA_BOOTSTRAP_SERVER)
                         .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                                 .setTopic(queue)
-                                .setValueSerializationSchema(new SimpleStringSchema())
+                                .setValueSerializationSchema(new JsonSerializationSchema<String>(
+                                        () -> new ObjectMapper()
+                                            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS))
+                                )
                                 .build()
                         )
                         .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
