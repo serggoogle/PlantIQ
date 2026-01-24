@@ -1,42 +1,63 @@
 package com.plantiq.sensors;
+
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonCreator;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 
 public class Sensor implements Serializable {
+    private String deviceId = "";
     private String name = "";
-    private String labelName = "";
-    private String labelValue = "";
     private double minThreshold = 0.0;
     private double maxThreshold = 0.0;
+    private double value = 0.0;
 
-    Sensor(String name){
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public Sensor(@JsonProperty("sensor") String name, @JsonProperty("deviceId") String deviceId) {
         this.name = name;
+        this.deviceId = deviceId;
     }
 
-    public String getName(){
-        return this.name;
-    }
-
-    public String getLabelName(){
-        return this.labelName;
-    }
-
-    public String getLabelValue(){
-        return this.labelValue;
-    }
-
-    public void setMinThreshold(double threshold){
+    public void setMinThreshold(double threshold) {
         this.minThreshold = threshold;
     }
 
-    public void setMaxThreshold(double threshold){
-       this.maxThreshold = threshold;
+    public void setValue(double value) {
+        this.value = value;
     }
 
-    public double getMinThreshold(){
+    public void setMaxThreshold(double threshold) {
+        this.maxThreshold = threshold;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    @JsonProperty("deviceId")
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    @JsonProperty("sensor")
+    public String getName() {
+        return name;
+    }
+
+    @JsonProperty("value")
+    public double getValue() {
+        return value;
+    }
+
+    @JsonIgnore
+    public double getMinThreshold() {
         return minThreshold;
     }
 
-    public double getMaxThreshold(){
+    @JsonIgnore
+    public double getMaxThreshold() {
         return maxThreshold;
     }
+
 }
