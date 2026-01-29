@@ -129,7 +129,7 @@ public class SensorStreamJob {
         )).name("Humidity-Sink");
 
         // Execute program, beginning computation.
-		env.execute(params.getRequired("label").strip());
+		env.execute(params.getRequired("label"));
 	}
 
 }
