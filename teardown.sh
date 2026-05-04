@@ -17,7 +17,8 @@ teardown_dev_environment(){
 }
 
 teardown_flink_environment(){
-	./flink/teardown-flink-resources.sh -c flink/flink-compose.yml
+	./infrastructure/flink/teardown-flink-resources.sh -c infrastructure/flink/flink-compose.yml
+	./infrastructure/flink/teardown-flink-resources.sh -c infrastructure/flink/simulator/simulator-engine-compose.yml
 	docker exec dev-container bash -i -c "clean-flink-target" > /dev/null 2>&1
 	echo "Flink environment torn down."
 }

@@ -1,63 +1,67 @@
+#include <ArduinoJson.h>
 #include "MQTT.h"
-#include "MQTTCredentials.h"
+#include "MQTT_Config.h"
 #include "PubSubClient.h"
 #include "WiFiClient.h"
+#include "Plant.h"
 
-MQTT::MQTT(): mqttClient(nullptr) {
-    // Utilizing the values from MQTTCredentials.h
-    _mqtt_broker = MQTT_SERVER;
-    _mqtt_port = MQTT_PORT;
+WiFiClient mqtt_wifi_client = WiFiClient();
+PubSubClient client(mqtt_wifi_client);
+
+void MQTT::send_payload(const char* &deviceID, Plant &plant, const char* &sensor, float &value, long long &timestamp) {
+    if (!client.connected()) {
+        reconnect();
+    }
+    JsonDocument payload;
+    char buffer[512];
+    payload["deviceId"] = deviceID;
+    payload["plant_name"] = plant.getName();
+    payload["plant_type"] = plant.getType();
+    payload["plant_species"] = plant.getSpecies();
+    payload["sensor_name"] = sensor;
+    payload["value"] = value;
+    payload["timestamp"] = timestamp;
+    // serializeJson(payload, Serial);
+    serializeJson(payload, buffer);
+    size_t n = serializeJson(payload, buffer);
+    char topic[64];
+    snprintf(topic, sizeof(topic),
+         "esp32/%s/sensor/%s",
+         deviceID,
+         sensor);
+    client.publish(topic, buffer, n);
 }
 
-MQTT::MQTT(const char* mqtt_server, int mqtt_port): mqttClient(nullptr) {
-    _mqtt_broker = mqtt_server;
-    _mqtt_port = mqtt_port;
+void MQTT::reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect("arduinoClient", MQTT_USER, MQTT_PASSWORD)) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
 }
 
-void MQTT::send_payload(String name, String sensor, float value)
-{
-    /*
-     * Sends a payload to the MQTT Server
-     * TODO:
-     * 1. Identify type of payload (json/binary)
-     * 2. Add fields to the Plant object.
-     * 3. Add Fields of the payload (deviceId, plantName, sensorType, etc)
-     *
-    */
-}
-
-void MQTT::mqtt_connect() {
+void MQTT::connect() {
     Serial.println("********* Setting up MQTT Broker Connection *********");
-    Serial.println("> Creating new WiFi Client (for MQTT Server)");
-    WiFiClient mqtt_wifi_client = WiFiClient();
-    mqttClient = new PubSubClient(mqtt_wifi_client);
-
-    Serial.println("> MQTT Broker Config:");
-    Serial.print("> Broker IP: ");
-    Serial.println(_mqtt_broker);
+    Serial.println("> MQTT Broker Config:" );
+    Serial.print("> Broker Address: ");
+    Serial.println(MQTT_SERVER);
     Serial.print("> Broker Port: ");
-    Serial.println(_mqtt_port);
-
-    mqttClient->setServer(_mqtt_broker, _mqtt_port);
+    Serial.println(MQTT_PORT);
     Serial.println("> Connecting to MQTT Broker");
-    // TODO: Select adequate id for mqttClient->connect();
-    // mqttClient->connect();
-
-    int RECONNECT_COUNT = 25;
-    while (!mqttClient->connected() && RECONNECT_COUNT > 0)
+    client.setServer(MQTT_SERVER, MQTT_PORT);
+    if (!client.connected())
     {
-        Serial.println(".");
-        delay(1000);
-        RECONNECT_COUNT--;
+        reconnect();
     }
-
-    if (RECONNECT_COUNT == 0)
-    {
-        Serial.println("> Unable to connect to MQTT Broker");
-    }
-    else
-    {
-        Serial.println("> Successfully connected to MQTT Broker");
-    }
+    Serial.println("> Successfully connected to MQTT Broker");
 }
 
+PubSubClient& MQTT::getClient() {
+    return client;
+}

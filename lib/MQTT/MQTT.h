@@ -1,21 +1,19 @@
-#ifndef MQTT_h
-#define MQTT_h
+#ifndef MQTT_H
+#define MQTT_H
 #pragma once
 #include <Arduino.h>
+#include "Plant.h"
+#include "MQTT_Config.h"
 
 class String;
 class PubSubClient;
 
 class MQTT {
 public:
-    MQTT();
-    MQTT(const char* mqtt_server, int mqtt_port);
-    void mqtt_connect();
-    static void send_payload(String name, String sensor, float value);
-private:
-    const char *_mqtt_broker;
-    int _mqtt_port;
-    PubSubClient *mqttClient;
+    static void connect();
+    static void send_payload(const char* &deviceID, Plant &plant, const char* &sensor, float &value, long long &timestamp);
+    static void reconnect();
+    static PubSubClient& getClient();
 };
 
-#endif
+#endif // MQTT_H

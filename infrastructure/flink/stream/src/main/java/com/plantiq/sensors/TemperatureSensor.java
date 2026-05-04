@@ -8,8 +8,8 @@ public class TemperatureSensor extends Sensor {
     final double MIN_TEMP_C = 0.0;
     final double MAX_TEMP_C = 41.0;
 
-    public TemperatureSensor(String name, String deviceId, Boolean isImperial) {
-        super(name, deviceId);
+    public TemperatureSensor(String deviceId, String plantName, String sensorName, Boolean isImperial) {
+        super(deviceId, plantName, sensorName);
         if (isImperial){
             super.setMinThreshold(celsiusToFahrenheit(MIN_TEMP_C));
             super.setMaxThreshold(celsiusToFahrenheit(MAX_TEMP_C));

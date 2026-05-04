@@ -18,6 +18,11 @@
 
 package com.plantiq;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
@@ -31,24 +36,22 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 
-import java.util.*;
-
 public class RabbitMQKafkaStream {
-    // TODO: Investigate using ENV variables instead since
+    // TODO: Investigate ENV variables
     private static final String HOST = "host.docker.internal";
     private static final String RABBITMQ_VIRTUAL_HOST = "/";
-    private static final String RABBITMQ_USERNAME = "guest";
-    private static final String RABBITMQ_PASSWORD = "guest";
-    private static final short RABBITMQ_PORT = 5672;
+    private static final String RABBITMQ_USERNAME = "flinkuser";
+    private static final String RABBITMQ_PASSWORD = "flinkpassword";
+    private static final int RABBITMQ_PORT = 5672;
     private static final String KAFKA_BOOTSTRAP_SERVER = "broker:9092";
-    private static final String KAFKA_TOPIC = "test-topic";
+    private static final int CHECKPOINT_INTERVAL = 1000;
     private static StreamExecutionEnvironment env;
 
     private static RMQSource<String> RMQSourceStream(RMQConnectionConfig config, String queueName){
         return new RMQSource<>(
                         config,            // config for the RabbitMQ connection
                         queueName,                 // name of the RabbitMQ queue to consume
-                        true,                        // use correlation ids; can be false if only at-least-once is required
+                        false,                        // use correlation ids; can be false if only at-least-once is required
                         new SimpleStringSchema());  // deserialization schema to turn messages into Java objects
     }
 
@@ -64,12 +67,13 @@ public class RabbitMQKafkaStream {
         List<String> queues = new ArrayList<>();
         Collections.addAll(
                 queues,
-                "temperature-f",
-                "temperature-c",
-                "humidity",
-                "moisture"
+                "temperature_c_queue",
+                "temperature_f_queue",
+                "humidity_queue",
+                "moisture_queue"
         );
         env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.enableCheckpointing(CHECKPOINT_INTERVAL);
         final RMQConnectionConfig rmqConfig = new RMQConnectionConfig.Builder()
                 .setHost(HOST)
                 .setPort(RABBITMQ_PORT)
@@ -80,7 +84,7 @@ public class RabbitMQKafkaStream {
 
         for (String queue : queues){
             queueStreamMap.put(queue,
-                    env.addSource(RMQSourceStream(rmqConfig, queue), "RMQ-"+queue));
+                    env.addSource(RMQSourceStream(rmqConfig, queue), queue));
         }
 
         // Temp print - implement kafka sink later.

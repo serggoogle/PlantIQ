@@ -1,0 +1,9 @@
+{
+  "deviceId": "ESP-32-Host",
+  "plant_name": "tomato",
+  "plant_type": "unknown",
+  "plant_species": "unknown",
+  "sensor_name": "temperature_sensor",
+  "value": 1234.1234,
+  "timestamp": 0
+}
