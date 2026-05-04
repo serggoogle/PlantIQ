@@ -4,10 +4,18 @@ services:
     hostname: rabbitmq
     ports:
       - 5552:5552
-      - 15672:15672
-      - 5672:5672
-    networks:
-      - messaging
+      - 15672:15672   # UI
+      - 5672:5672     # AMQP (Flink)
+      - 1883:1883     # MQTT (ESP32)
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    command: >
+      /bin/bash -c "
+        rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management;
+        rabbitmqctl import_definitions /etc/rabbitmq/definitions.json;
+        rabbitmq-server
+      "
 networks:
   messaging:
     external: true

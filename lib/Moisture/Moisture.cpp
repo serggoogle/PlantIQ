@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include "Moisture.h"
+#define MOISTURE_SENSOR_PIN A2
 
-#define MOISTURE_SENSOR_PIN A0
-
-uint16_t Moisture::getMoisture() {
+float Moisture::getMoisture() {
     return analogRead(MOISTURE_SENSOR_PIN);
 }

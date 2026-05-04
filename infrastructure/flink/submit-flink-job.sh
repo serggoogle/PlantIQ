@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JAR_PATH="PlantIQFlink/target/PlantIQFlink-1.0.jar"
+JAR_PATH=""
 EXISTING_JAR=()
 # Default flags
 SIMULATION_ENGINE=false
@@ -72,11 +72,13 @@ upload_jar(){
 	delete_jar
 	build_jar
 	echo "Uploading latest jar..."
+	if [[ -z "$JAR_PATH" ]]; then
+		JAR_PATH=$(find . -name "PlantIQ-Flink-1.0.jar" -type f)
+	fi
 	res=$(curl -sS -X POST --url "$HOST/v1/jars/upload" --header 'content-type: multipart/form-data' -F "jarfile=@${JAR_PATH}" | jq -r ".status")
-
 	if [[ ! ${res} = "success" ]]; then
-		echo ">Please check that Flink is running and the jar file exists at ${JAR_PATH}"
-		echo "Upload failed."
+		echo "> Upload failed."
+		echo "> Please check that Flink is running and the jar file exists at ${JAR_PATH}"
 		exit 1
 	fi
 	get_jar
@@ -96,7 +98,7 @@ start_flink_jobs(){
 			jobId=$(curl -sS -X POST --url "$HOST/v1/jars/${EXISTING_JAR}/run" | jq -r '.jobid')
 		fi
 		if [ "$jobId" == "null" ]; then
-			echo "Error submitting job. Please look at the Flink logs for more details"
+			echo "> Error submitting job. Please look at the Flink logs for more details"
 			exit 1
 		fi
 		echo Started $label with jobid $jobId

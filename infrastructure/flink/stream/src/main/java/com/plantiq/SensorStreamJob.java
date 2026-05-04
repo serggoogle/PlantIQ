@@ -75,17 +75,18 @@ public class SensorStreamJob {
                 TypeInformation.of(Double.class));
     }
 
-    public static DataStreamSource<Double> sensorDataStream(DataGeneratorSource<Double> dataSource, String sourceName){
+    public static DataStreamSource<Double> sensorDataStream(DataGeneratorSource<Double> dataSource, String sourceName) {
         return env.fromSource(dataSource, WatermarkStrategy.noWatermarks(), sourceName);
     }
 
 	public static void main(String[] args) throws Exception {
         params = ParameterTool.fromArgs(args);
         final String DEVICE_ID = params.getRequired("label");
-        TemperatureSensor temperatureC_Sensor = new TemperatureSensor("temperature_c", DEVICE_ID, false);
-        TemperatureSensor temperatureF_Sensor = new TemperatureSensor("temperature_f", DEVICE_ID, true);
-        MoistureSensor moistureSensor = new MoistureSensor("moisture", DEVICE_ID);
-        HumiditySensor humiditySensor = new HumiditySensor("humidity", DEVICE_ID);
+        final String PLANT_NAME = params.get("plant_name", "Basil");
+        TemperatureSensor temperatureC_Sensor = new TemperatureSensor(DEVICE_ID, PLANT_NAME, "temperature_c", false);
+        TemperatureSensor temperatureF_Sensor = new TemperatureSensor(DEVICE_ID, PLANT_NAME, "temperature_f",true);
+        MoistureSensor moistureSensor = new MoistureSensor(DEVICE_ID, PLANT_NAME, "moisture");
+        HumiditySensor humiditySensor = new HumiditySensor(DEVICE_ID, PLANT_NAME, "humidity");
 
         DataGeneratorSource<Double> temperatureC_Source = sensorDataSource(temperatureC_Sensor);
         DataGeneratorSource<Double> temperatureF_Source = sensorDataSource(temperatureF_Sensor);
@@ -110,21 +111,21 @@ public class SensorStreamJob {
         // Sensor streams to Rabbitmq
         temperatureC_DataStream.map(new SensorToJsonMapper(temperatureC_Sensor)).rebalance().addSink(new RMQSink<>(
                connectionConfig,
-               "temperature-c",
+               "temperature_c_queue",
                 new SimpleStringSchema()
         )).name("Temperature-C-Sink");
         temperatureF_DataStream.map(new SensorToJsonMapper(temperatureF_Sensor)).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
-                "temperature-f",
+                "temperature_f_queue",
                 new SimpleStringSchema()
         )).name("Temperature-F-Sink");
         moistureDataStream.map(new SensorToJsonMapper(moistureSensor)).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
-                "moisture",
-                new SimpleStringSchema()        )).name("Moisture-Sink");
+                "moisture_queue",
+                new SimpleStringSchema())).name("Moisture-Sink");
         humidityDataStream.map(new SensorToJsonMapper(humiditySensor)).rebalance().addSink(new RMQSink<>(
                 connectionConfig,
-                "humidity",
+                "humidity_queue",
                 new SimpleStringSchema()
         )).name("Humidity-Sink");
 

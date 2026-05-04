@@ -1,0 +1,84 @@
+{
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "users": [
+      {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    },
+    {
+      "name": "esp32user",
+      "password": "esp32password",
+      "tags": "administrator"
+    },
+    {
+      "name": "flinkuser",
+      "password": "flinkpassword",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "esp32user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "flinkuser",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    { "name": "temperature_c_queue", "vhost": "/", "durable": true },
+    { "name": "temperature_f_queue", "vhost": "/", "durable": true },
+    { "name": "humidity_queue", "vhost": "/", "durable": true },
+    { "name": "moisture_queue", "vhost": "/", "durable": true }
+  ],
+  "exchanges": [
+    { "name": "amq.topic", "vhost": "/", "type": "topic", "durable": true }
+  ],
+  "bindings": [
+    {
+      "source": "amq.topic",
+      "vhost": "/",
+      "destination": "temperature_c_queue",
+      "destination_type": "queue",
+      "routing_key": "esp32.*.sensor.temperature_c"
+    },
+    {
+      "source": "amq.topic",
+      "vhost": "/",
+      "destination": "temperature_f_queue",
+      "destination_type": "queue",
+      "routing_key": "esp32.*.sensor.temperature_f"
+    },
+    {
+      "source": "amq.topic",
+      "vhost": "/",
+      "destination": "humidity_queue",
+      "destination_type": "queue",
+      "routing_key": "esp32.*.sensor.humidity"
+    },
+    {
+      "source": "amq.topic",
+      "vhost": "/",
+      "destination": "moisture_queue",
+      "destination_type": "queue",
+      "routing_key": "esp32.*.sensor.moisture"
+    }
+  ]
+}

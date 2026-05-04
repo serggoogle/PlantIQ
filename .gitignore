@@ -2,7 +2,7 @@
 .DS_Store
 .vscode
 .idea
-lib/MQTT/MQTTCredentials.h
-lib/Prometheus/Config.h
-flink/PlantIQFlink/.idea/
-flink/PlantIQFlink/target/
+lib/MQTT/MQTT_Config.h
+src/Network_Config.h
+infrastructure/flink/stream/.idea/
+infrastructure/flink/stream/target/

@@ -47,8 +47,8 @@ setup_grafana(){
 }
 
 setup_flink(){
-    (./flink/create-flink-resources.sh -c flink/flink-compose.yml && \
-    ./flink/submit-flink-job.sh -f flink/PlantIQFlink/target/PlantIQFlink-1.0.jar) || exit 1
+    (./infrastructure/flink/create-flink-resources.sh -c infrastructure/flink/flink-compose.yml && \
+    ./infrastructure/flink/submit-flink-job.sh) || exit 1
 }
 
 setup_networks() {

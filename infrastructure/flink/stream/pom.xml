@@ -21,11 +21,11 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.plantiq</groupId>
-	<artifactId>PlantIQFlink</artifactId>
+	<artifactId>PlantIQ-Flink</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>PlantIQFlink</name>
+	<name>PlantIQ-Flink</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -129,8 +129,8 @@ under the License.
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>${target.java.version}</source>
-					<target>${target.java.version}</target>
+					<source>16</source>
+					<target>16</target>
 				</configuration>
 			</plugin>
 

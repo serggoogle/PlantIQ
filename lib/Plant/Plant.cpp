@@ -6,11 +6,11 @@ Plant::Plant(const char* name)
     _name = name;
 }
 
-Plant::Plant(const char* name, const char* species)
+Plant::Plant(const char* name, const char* type, const char* species)
 {
     _name = name;
+    _type = type;
     _species = species;
-    _label = "{job=\"" + _name + "\",species=\"" + _species + "\"}";
 }
 
 const char* Plant::getName()
@@ -22,6 +22,6 @@ const char* Plant::getSpecies() {
     return _species.c_str();
 }
 
-const char* Plant::getLabel(){
-    return _label.c_str();
+const char* Plant::getType() {
+    return _type.c_str();
 }

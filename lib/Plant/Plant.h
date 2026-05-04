@@ -10,15 +10,15 @@
 class Plant {
 public:
     explicit Plant(const char* name);
-    Plant(const char* name, const char* species);
+    Plant(const char* name, const char* type, const char* species);
     const char* getName();
+    const char* getType();
     const char* getSpecies();
-    const char* getLabel();
-
 private:
     std::string _name;
     std::string _species;
-    std::string _label;
+    std::string _type = "plant";
+
 };
 
 #endif
